@@ -1,0 +1,11 @@
+downstream
+intergenic
+intronic
+ncRNA_exonic
+ncRNA_intronic
+ncRNA_splicing
+ncRNA_UTR3
+ncRNA_UTR5
+upstream
+UTR3
+UTR5
