@@ -4,7 +4,7 @@ usage()
 {
 echo "# $0 A script to append keys to best candidate files for manual filtering
 # This script is specifically for CP twin analysis
-# Requirements: Run ANNOVARv3.sh on a multisample r single sample vcf for each family member.
+# Requirements: Run ANNOVARv3.sh on a multisample or single sample vcf for each family member.
 # use the splitMultiANNOVAR.py script to break GenomeAnnotationsCombined.txt files out to individuals
 # You may need to generate the key files.
 #
@@ -20,7 +20,7 @@ echo "# $0 A script to append keys to best candidate files for manual filtering
 # Original: forked from trioKeyMatchingAfterANNOVAR.sh by Mark Corbett and Nandini 05/03/2019
 # mark.corbett at adelaide.edu.au
 # Modified (date; name; description)
-# 16/03/2019; Mark Corbett; Minor bug fixes to ake teh script more tolerant of file names and missing key files
+# 16/03/2019; Mark Corbett; Minor bug fixes to make the script more tolerant of file names and missing key files
 #
 "
 }
