@@ -28,7 +28,10 @@ def usage():
 inputFile = ''
 sampleFile = ''
 notGeneTerms = ['downstream', 'intergenic', 'intronic', 'ncRNA_exonic', 'ncRNA_intronic', 'ncRNA_splicing', 'ncRNA_UTR3', 'ncRNA_UTR5', 'upstream', 'UTR3', 'UTR5']
-
+filterTerms = ['.', 'PASS']
+ncSpliceTerms = ['splicing', 'intronic']
+filter005 = ['esp6500siv2_all', '1000g2015aug_all', 'UK10K-AF-all']
+filter0001 = ['ExAC.r0.1.filtered', 'exac03', 'gnomad211_exome', 'gnomad211_genome']
 # Read command line arguments
 try:
     opts, args = getopt.getopt(sys.argv[1:],'hi:s:',['help'])
@@ -67,21 +70,42 @@ elif sampleFile !='':
     samples = [line.rstrip() for line in open(sampleFile)]
 
 dfCore=coreTable
-for s in samples:
+for s in samples: # Maybe this loop could be an apply function?
     currentSampleList=ANNOVARtable[[s]]
     homList=currentSampleList[currentSampleList[s].str.match('1/1')]
     dfCore = pd.concat([dfCore,homList], axis=1, join='inner') # Add , sort='False' once Ubuntu is upgraded
 
 dfCore.to_csv("ibdAndXl."+inputFile, sep='\t')
-bgc=dfCore[~dfCore.Func.gene.isin(notGeneTerms)]
+
+#Generic filters for most likely pathogenic
+dfCore=dfCore[dfCore['FILTER'].isin(filterTerms)]
+dfCore=dfCore[(dfCore[[filter005]].apply(pd.to_numeric, errors='coerce').fillna(0).lt(0.005)).all(axis=1)]
+dfCore=dfCore[(dfCore[[filter0001]].apply(pd.to_numeric, errors='coerce').fillna(0).lt(0.0001)).all(axis=1)]
+
+#BestGeneCandidates
+bgc=dfCore[~dfCore['Func.gene'].isin(notGeneTerms)]
 bgc.to_csv("ibdAndXl.BestGeneCandidates."+inputFile, sep='\t')
 
-dfCore=coreTable
-for s in samples:
+# Cadidates to test with spliceAI
+spliceCandidates=dfCore[dfCore['Func.gene'].isin(ncSpliceTerms)]
+spliceCandidates.to_csv("ibdAndXl.SpliceCandidates."+inputFile, sep='\t')
+
+# Reset and repeat for het calls
+dfCore=coreTable 
+for s in samples:  
     currentSampleList=ANNOVARtable[[s]]
     homList=currentSampleList[currentSampleList[s].str.match('0/1')]
     dfCore = pd.concat([dfCore,homList], axis=1, join='inner') # Add , sort='False' once Ubuntu is upgraded
 
 dfCore.to_csv("het."+inputFile, sep='\t')
-bgc=dfCore[~dfCore.Func.gene.isin(notGeneTerms)]
+dfCore=dfCore[dfCore['FILTER'].isin(filterTerms)]
+dfCore=dfCore[(dfCore[[filter005]].apply(pd.to_numeric, errors='coerce').fillna(0).lt(0.005)).all(axis=1)]
+dfCore=dfCore[(dfCore[[filter0001]].apply(pd.to_numeric, errors='coerce').fillna(0).lt(0.0001)).all(axis=1)]
+
+#BestGeneCandidates
+bgc=dfCore[~dfCore['Func.gene'].isin(notGeneTerms)]
 bgc.to_csv("het.BestGeneCandidates."+inputFile, sep='\t')
+
+# Find cadidates to test with spliceAI
+spliceCandidates=dfCore[dfCore['Func.gene'].isin(ncSpliceTerms)]
+spliceCandidates.to_csv("het.SpliceCandidates."+inputFile, sep='\t')
