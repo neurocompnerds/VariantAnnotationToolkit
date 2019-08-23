@@ -79,8 +79,8 @@ dfCore.to_csv("ibdAndXl."+inputFile, sep='\t')
 
 #Generic filters for most likely pathogenic
 dfCore=dfCore[dfCore['FILTER'].isin(filterTerms)]
-dfCore=dfCore[(dfCore[[filter005]].apply(pd.to_numeric, errors='coerce').fillna(0).lt(0.005)).all(axis=1)]
-dfCore=dfCore[(dfCore[[filter0001]].apply(pd.to_numeric, errors='coerce').fillna(0).lt(0.0001)).all(axis=1)]
+dfCore=dfCore[(dfCore[filter005].apply(pd.to_numeric, errors='coerce').fillna(0).lt(0.005)).all(axis=1)]
+dfCore=dfCore[(dfCore[filter0001].apply(pd.to_numeric, errors='coerce').fillna(0).lt(0.0001)).all(axis=1)]
 
 #BestGeneCandidates
 bgc=dfCore[~dfCore['Func.gene'].isin(notGeneTerms)]
@@ -99,8 +99,8 @@ for s in samples:
 
 dfCore.to_csv("het."+inputFile, sep='\t')
 dfCore=dfCore[dfCore['FILTER'].isin(filterTerms)]
-dfCore=dfCore[(dfCore[[filter005]].apply(pd.to_numeric, errors='coerce').fillna(0).lt(0.005)).all(axis=1)]
-dfCore=dfCore[(dfCore[[filter0001]].apply(pd.to_numeric, errors='coerce').fillna(0).lt(0.0001)).all(axis=1)]
+dfCore=dfCore[(dfCore[filter005].apply(pd.to_numeric, errors='coerce').fillna(0).lt(0.005)).all(axis=1)]
+dfCore=dfCore[(dfCore[filter0001].apply(pd.to_numeric, errors='coerce').fillna(0).lt(0.0001)).all(axis=1)]
 
 #BestGeneCandidates
 bgc=dfCore[~dfCore['Func.gene'].isin(notGeneTerms)]
