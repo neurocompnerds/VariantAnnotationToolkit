@@ -10,7 +10,7 @@ def usage():
 # familyKeyMatchingAfterANNOVAR.py a script to filter affected family members for matched genotypes in a multisample ANNOVAR file
 # also outputting a BestGeneCandidates file.  
 #
-# Usage familyKeyMatchingAfterANNOVAR.py -i ANNOVAR.table.txt -s sampleList.txt [-k] | [ -h | --help ]
+# Usage familyKeyMatchingAfterANNOVAR.py -i ANNOVAR.table.txt -s sampleList.txt | [ -h | --help ]
 #
 # Options:
 # -i           /path/to/inputFile    REQUIRED: A multisample ANNOVAR table in tab delimited format
