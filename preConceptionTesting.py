@@ -57,6 +57,14 @@ if inputFile == '':
     print('Hey, you forgot to tell me which ANNOVAR file to filter\n')
     sys.exit(2)
 
+# Create the filter function
+def bestGeneCandidatesFilter(df):
+    df=df[df['FILTER'].isin(filterTerms)]
+    df=df[(df[filter005].apply(pd.to_numeric, errors='coerce').fillna(0).lt(0.005)).all(axis=1)]
+    df=df[(df[filter0001].apply(pd.to_numeric, errors='coerce').fillna(0).lt(0.0001)).all(axis=1)]
+    df=df[~df['Func.gene'].isin(notGeneTerms)]
+    return df
+
 # Count the number of columns in the ANNOVAR table
 with open(inputFile) as f:
     reader = csv.reader(f, delimiter='\t', skipinitialspace=True)
@@ -71,28 +79,30 @@ hetList=ANNOVARtable[ANNOVARtable[samples[0]].str.match('0/1') & ANNOVARtable[sa
 hetList.to_csv("allSharedHetCalls."+inputFile, sep='\t')
 
 #Generic filters for most likely pathogenic
-hetList=hetList[hetList['FILTER'].isin(filterTerms)]
-hetList=hetList[(hetList[filter005].apply(pd.to_numeric, errors='coerce').fillna(0).lt(0.005)).all(axis=1)]
-hetList=hetList[(hetList[filter0001].apply(pd.to_numeric, errors='coerce').fillna(0).lt(0.0001)).all(axis=1)]
-hetList=hetList[~hetList['Func.gene'].isin(notGeneTerms)]
+hetList=bestGeneCandidatesFilter(df=hetList)
 hetList.to_csv("allSharedHetCalls.BestGeneCandidates."+inputFile, sep='\t')
 
 # Compound het calls
 mNotfHets=ANNOVARtable[ANNOVARtable[samples[0]].str.match('0/1') & ANNOVARtable[samples[1]].str.contains('|'.join(nullAlelles))]
+mGenes=pd.unique(mNotfHets['Gene.gene'])
 fNotmHets=ANNOVARtable[ANNOVARtable[samples[0]].str.contains('|'.join(nullAlelles)) & ANNOVARtable[samples[1]].str.match('0/1')]
+fGenes=pd.unique(fNotmHets['Gene.gene'])
+seriesCHgenes=pd.Series(mGenes.tolist() + fGenes.tolist())
+chGenes=seriesCHgenes[seriesCHgenes.duplicated()]
 compHets=pd.concat([mNotfHets, fNotmHets], axis=0, join='outer')
-compHets=compHets[compHets['Gene.gene'].duplicated(keep=False)] # All possible compHets
-compHets=compHets[compHets['FILTER'].isin(filterTerms)]
-compHets=compHets[(compHets[filter005].apply(pd.to_numeric, errors='coerce').fillna(0).lt(0.005)).all(axis=1)]
-compHets=compHets[(compHets[filter0001].apply(pd.to_numeric, errors='coerce').fillna(0).lt(0.0001)).all(axis=1)]
-compHets=compHets[~compHets['Func.gene'].isin(notGeneTerms)]
+compHets=compHets[compHets['Gene.gene'].isin(chGenes)] # All possible compHets
+# Independently apply filters to mum and dad lists then filter the CH list
+filtmNotfHets=bestGeneCandidatesFilter(df=mNotfHets)
+filtfNotmHets=bestGeneCandidatesFilter(df=fNotmHets)
+mGenes=pd.unique(filtmNotfHets['Gene.gene'])
+fGenes=pd.unique(filtfNotmHets['Gene.gene'])
+seriesCHgenes=pd.Series(mGenes.tolist() + fGenes.tolist())
+chGenes=seriesCHgenes[seriesCHgenes.duplicated()]
+compHets=compHets[compHets['Gene.gene'].isin(chGenes)]
+compHets=bestGeneCandidatesFilter(df=compHets)
 compHets=compHets[compHets['Gene.gene'].duplicated(keep=False)]  # Re-run the gene filter after the other filters
 compHets.to_csv("allcompHetCalls.BestGeneCandidates."+inputFile, sep='\t')
 
 # X-linked
-xList=mNotfHets[mNotfHets['chr'].str.contains('X')]
-xList=xList[xList['FILTER'].isin(filterTerms)]
-xList=xList[(xList[filter005].apply(pd.to_numeric, errors='coerce').fillna(0).lt(0.005)).all(axis=1)]
-xList=xList[(xList[filter0001].apply(pd.to_numeric, errors='coerce').fillna(0).lt(0.0001)).all(axis=1)]
-xList=xList[~xList['Func.gene'].isin(notGeneTerms)]
+xList=filtmNotfHets[filtmNotfHets['chr'].str.contains("X", na=False)]
 xList.to_csv("allX-linked.BestGeneCandidates."+inputFile, sep='\t')
