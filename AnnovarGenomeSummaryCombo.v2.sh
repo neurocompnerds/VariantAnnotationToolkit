@@ -33,6 +33,7 @@ echo "## AnnovarGenomeSummaryCombo.sh -c ComboFile.csv -g GenomeSummaryFile.csv 
 # 11/04/2016; Ali Gardner; Update for use with new databases in Annovar
 # 11/07/2018; Mark Corbett; Change ordering and headers of new ANNOVAR output
 # 15/03/2019; Mark corbett; Updated script to handle extra Otherinfo columns that get added using table_annovar.pl -allsamples flag
+# 11/06/2019; Ali Gardner; Updated some databases in Annovar
 "
 }
 
@@ -97,11 +98,11 @@ NColsGenomeFile=$(awk -F "\t" 'FNR == 2 {print NF}' $GenomeFile.txt)
 cut -f 1-5 $ComboFile.txt > $OUTPREFIX.tmp.1.txt # chr,start,end,ref,obs
 cut -f 6-19 $GenomeFile.txt > $OUTPREFIX.tmp.2a.txt # Func.gene,Gene,GeneDetail,ExonicFunc,AAChange,Conserved,SegDup,ESP6500siv2_ALL,ExAC.r0.1.filtered,1000g2014oct_ALL,UK10K,cg69,Wellderly,PopFreqMax
 cut -f 14-16 $ComboFile.txt > $OUTPREFIX.tmp.2b.txt # exac03,gnomad_exome,gnomad_genome
-cut -f 20-26 $GenomeFile.txt > $OUTPREFIX.tmp.3a.txt # snp142,snp138NonFlagged, clinvar (5cols)
-cut -f 6,7,8,10,12 $ComboFile.txt > $OUTPREFIX.tmp.3b.txt # DDG2P,EpilepsyGene,EYEGene,IDGene,MCDGene
+cut -f 20-26 $GenomeFile.txt > $OUTPREFIX.tmp.3a.txt # snp150,snp138NonFlagged, clinvar (5cols)
+cut -f 6,7,8,10,12 $ComboFile.txt > $OUTPREFIX.tmp.3b.txt # DDG2P,EpilepsyGene,CPGene,IDGene,MCDGene
 cut -f 9,11,13 $ComboFile.txt > $OUTPREFIX.tmp.3c.txt # GDIScores,LoFToolScores,RVISExACscores
-cut -f 27-111 $GenomeFile.txt > $OUTPREFIX.tmp.4.txt # All the other annotations
-cut -f 112-$NColsGenomeFile $GenomeFile.txt > $OUTPREFIX.tmp.5.txt # VCF info
+cut -f 27-119 $GenomeFile.txt > $OUTPREFIX.tmp.4.txt # All the other annotations
+cut -f 120-$NColsGenomeFile $GenomeFile.txt > $OUTPREFIX.tmp.5.txt # VCF info
 
 # Put the labels back into the "Otherinfo"
 if [ "${OUTPREFIX:(-2)}" = "gz" ]; then

@@ -43,6 +43,7 @@ echo "# $0 A script to annotate variants using ANNOVAR
 # 03/09/2018; Ali Gardner; Update most recent ID gene list
 # 01/03/2019; Mark Corbett; Update to match Ali's December 2018 version.  Now annotates multisample VCF.
 # 15/03/2019; Mark Corbett; Remove Eye gene list and replace with CP gene bed file.
+# 11/06/2019; Ali Gardner; Updated some databases in Annovar
 " 
 }
 
@@ -70,10 +71,10 @@ fi
 perl $AnnovarPATH/table_annovar.pl -thread 8 $AV_INPUT $AV_DB/ \
 --buildver $BUILD \
 --remove \
---protocol gene,phastConsElements46way,genomicSuperDups,esp6500siv2_all,ExAC.r0.1.filtered,1000g2015aug_all,UK10K-AF-all,cg69,Wellderly_v1-0-all,popfreq_max_20150413,snp142,snp138NonFlagged,clinvar_20170905,dbnsfp33a,\
-dbnsfp31a_interpro,dbscsnv11,gwava,spidex,\
-evoCpg,cpgIslandExt,evofold,gwasCatalog,mirCodeMicroRNAsites,switchDbTss,targetScanS,tfbsConsSites,vistaEnhancers,wgEncodeRegTfbsClusteredV3,wgRna \
---operation g,r,r,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,r,r,r,r,r,r,r,r,r,r,r \
+--protocol gene,phastConsElements46way,genomicSuperDups,esp6500siv2_all,ExAC.r0.1.filtered,1000g2015aug_all,UK10K-AF-all,cg69,Wellderly_v1-0-all,popfreq_max_20150413,avsnp150,snp138NonFlagged,clinvar_20190305,dbnsfp35a,\
+dbnsfp31a_interpro,dbscsnv11,regsnpintron,gwava,spidex,\
+dgvMerged,evoCpg,cpgIslandExt,evofold,gwasCatalog,mirCodeMicroRNAsites,switchDbTss,targetScanS,tfbsConsSites,vistaEnhancers,wgEncodeRegTfbsClusteredV3,wgRna \
+--operation g,r,r,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,r,r,r,r,r,r,r,r,r,r,r,r \
 --otherinfo \
 --nastring . \
 --csvout \
@@ -81,8 +82,8 @@ evoCpg,cpgIslandExt,evofold,gwasCatalog,mirCodeMicroRNAsites,switchDbTss,targetS
 
 # ExAC and gnomAD
 perl $AnnovarPATH/annotate_variation.pl --filter --buildver $BUILD --thread 8 --dbtype exac03 $AV_INPUT $AV_DB/ >> $1.pipeline.log 2>&1
-perl $AnnovarPATH/annotate_variation.pl --filter --buildver $BUILD --thread 8 --dbtype gnomad_exome $AV_INPUT $AV_DB/ >> $1.pipeline.log 2>&1
-perl $AnnovarPATH/annotate_variation.pl --filter --buildver $BUILD --thread 8 --dbtype gnomad_genome $AV_INPUT $AV_DB/ >> $1.pipeline.log 2>&1
+perl $AnnovarPATH/annotate_variation.pl --filter --buildver $BUILD --thread 8 --dbtype gnomad211_exome $AV_INPUT $AV_DB/ >> $1.pipeline.log 2>&1
+perl $AnnovarPATH/annotate_variation.pl --filter --buildver $BUILD --thread 8 --dbtype gnomad211_genome $AV_INPUT $AV_DB/ >> $1.pipeline.log 2>&1
 
 # Generate special regionanno files
 perl $AnnovarPATH/annotate_variation.pl -regionanno -buildver $BUILD -dbtype bed -bedfile Epilepsy_gene_list_Dec18.bed $AV_INPUT $AV_DB >> $1.pipeline.log 2>&1
