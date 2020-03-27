@@ -34,6 +34,7 @@ echo "## AnnovarGenomeSummaryCombo.sh -c ComboFile.csv -g GenomeSummaryFile.csv 
 # 11/07/2018; Mark Corbett; Change ordering and headers of new ANNOVAR output
 # 15/03/2019; Mark corbett; Updated script to handle extra Otherinfo columns that get added using table_annovar.pl -allsamples flag
 # 11/06/2019; Ali Gardner; Updated some databases in Annovar
+# 27/03/2020; Mark Corbett; Fix the annoying otherInfo labels
 "
 }
 
@@ -104,7 +105,7 @@ cut -f 9,11,13 $ComboFile.txt > $OUTPREFIX.tmp.3c.txt # GDIScores,LoFToolScores,
 cut -f 27-119 $GenomeFile.txt > $OUTPREFIX.tmp.4.txt # All the other annotations
 cut -f 120-$NColsGenomeFile $GenomeFile.txt > $OUTPREFIX.tmp.5.txt # VCF info
 
-# Put the labels back into the "Otherinfo"
+# Replace Otherinfo labels with VCF fields"
 if [ "${OUTPREFIX:(-2)}" = "gz" ]; then
 	VCFFIELDS=$(zcat $OUTPREFIX | grep -m1 \#CHROM) #Assumes $OUTPREFIX = a bgzipped vcf file which might be the case if fed from ANNOVARv3.sh
         NcolsVCFfields=$(zcat $OUTPREFIX | grep -m1 \#CHROM | awk -F "\t" 'FNR == 1 {print NF}')
@@ -116,11 +117,13 @@ fi
 NColsTmp5=$(awk -F "\t" 'FNR == 2 {print NF}' $OUTPREFIX.tmp.5.txt)
 
 if [ "$NcolsVCFfields" -eq "$NColsTmp5" ]; then
-    sed -i "1s,^Otherinfo,$VCFFIELDS,g" $OUTPREFIX.tmp.5.txt
-else
-    cut -f 1,4-$NColsTmp5 $OUTPREFIX.tmp.5.txt > $OUTPREFIX.tmp.6.txt # Assume -withzyg info has been added. Keep the Allele fraction but chuck out the Depth and QUAL data
+    printf "$VCFFIELDS\n" > $OUTPREFIX.tmp.6.txt
+    sed '1d' $OUTPREFIX.tmp.5.txt >> $OUTPREFIX.tmp.6.txt
     mv $OUTPREFIX.tmp.6.txt $OUTPREFIX.tmp.5.txt
-    sed -i "1s,^Otherinfo,Allele_Fraction\t$VCFFIELDS,g" $OUTPREFIX.tmp.5.txt 
+else # A bit risky but should work unless something weird happened
+    printf "Allele_Fraction\t$VCFFIELDS\n" > $OUTPREFIX.tmp.6.txt
+    cut -f 1,4-$NColsTmp5 $OUTPREFIX.tmp.5.txt | sed '1d'>> $OUTPREFIX.tmp.6.txt # Assume -withzyg info has been added. Keep the Allele fraction but chuck out the Depth and QUAL data
+    mv $OUTPREFIX.tmp.6.txt $OUTPREFIX.tmp.5.txt
 fi
 
 # Create a key for variant lookup chr-start-ref-obs
