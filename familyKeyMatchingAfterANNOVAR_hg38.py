@@ -20,7 +20,7 @@ def usage():
 # Script created by Mark Corbett on 15/08/2019
 # Contact: mark.corbett at adelaide.edu dot au
 # Edit History (Name; Date; Description)
-# Mark; 27/01/2021; Change Func.gene to Func.refGene as this was changed in ANNOVAR  
+# Ali Gardner; 21/01/2021; Tweak to use with hg38 (no UK10, Wellderley, Exac.ro.1.filtered), change Func.gene to Func.refGene
 #
 '''
          )
@@ -31,8 +31,8 @@ sampleFile = ''
 notGeneTerms = ['downstream', 'intergenic', 'intronic', 'ncRNA_exonic', 'ncRNA_intronic', 'ncRNA_splicing', 'ncRNA_UTR3', 'ncRNA_UTR5', 'upstream', 'UTR3', 'UTR5']
 filterTerms = ['.', 'PASS']
 ncSpliceTerms = ['splicing', 'intronic']
-filter005 = ['esp6500siv2_all', '1000g2015aug_all', 'UK10K-AF-all']
-filter0001 = ['ExAC.r0.1.filtered', 'exac03', 'gnomad211_exome', 'gnomad211_genome']
+filter005 = ['esp6500siv2_all', '1000g2015aug_all']
+filter0001 = ['exac03', 'gnomad211_exome', 'gnomad211_genome']
 # Read command line arguments
 try:
     opts, args = getopt.getopt(sys.argv[1:],'hi:s:',['help'])

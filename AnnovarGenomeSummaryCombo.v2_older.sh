@@ -35,7 +35,6 @@ echo "## AnnovarGenomeSummaryCombo.sh -c ComboFile.csv -g GenomeSummaryFile.csv 
 # 15/03/2019; Mark corbett; Updated script to handle extra Otherinfo columns that get added using table_annovar.pl -allsamples flag
 # 11/06/2019; Ali Gardner; Updated some databases in Annovar
 # 27/03/2020; Mark Corbett; Fix the annoying otherInfo labels
-# 01/09/2020; Ali Gardner; Add Mackenzie & 5'UTR genes
 "
 }
 
@@ -99,12 +98,12 @@ NColsGenomeFile=$(awk -F "\t" 'FNR == 2 {print NF}' $GenomeFile.txt)
 # Combine columns (specific to how ANNOVAR is run so may or may not work perfectly)
 cut -f 1-5 $ComboFile.txt > $OUTPREFIX.tmp.1.txt # chr,start,end,ref,obs
 cut -f 6-19 $GenomeFile.txt > $OUTPREFIX.tmp.2a.txt # Func.gene,Gene,GeneDetail,ExonicFunc,AAChange,Conserved,SegDup,ESP6500siv2_ALL,ExAC.r0.1.filtered,1000g2014oct_ALL,UK10K,cg69,Wellderly,PopFreqMax
-cut -f 16-18 $ComboFile.txt > $OUTPREFIX.tmp.2b.txt # exac03,gnomad_exome,gnomad_genome
+cut -f 14-16 $ComboFile.txt > $OUTPREFIX.tmp.2b.txt # exac03,gnomad_exome,gnomad_genome
 cut -f 20-26 $GenomeFile.txt > $OUTPREFIX.tmp.3a.txt # snp150,snp138NonFlagged, clinvar (5cols)
-cut -f 6,7,8,9,11,13,14 $ComboFile.txt > $OUTPREFIX.tmp.3b.txt # DDG2P,EpilepsyGene,CPGene,IDGene,MCDGene,Mckenzie,5UTR
-cut -f 10,12,15 $ComboFile.txt > $OUTPREFIX.tmp.3c.txt # GDIScores,LoFToolScores,RVISExACscores
-cut -f 27-120 $GenomeFile.txt > $OUTPREFIX.tmp.4.txt # All the other annotations
-cut -f 121-$NColsGenomeFile $GenomeFile.txt > $OUTPREFIX.tmp.5.txt # VCF info
+cut -f 6,7,8,10,12 $ComboFile.txt > $OUTPREFIX.tmp.3b.txt # DDG2P,EpilepsyGene,CPGene,IDGene,MCDGene
+cut -f 9,11,13 $ComboFile.txt > $OUTPREFIX.tmp.3c.txt # GDIScores,LoFToolScores,RVISExACscores
+cut -f 27-119 $GenomeFile.txt > $OUTPREFIX.tmp.4.txt # All the other annotations
+cut -f 120-$NColsGenomeFile $GenomeFile.txt > $OUTPREFIX.tmp.5.txt # VCF info
 
 # Replace Otherinfo labels with VCF fields"
 if [ "${OUTPREFIX:(-2)}" = "gz" ]; then

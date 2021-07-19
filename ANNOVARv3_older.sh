@@ -44,9 +44,7 @@ echo "# $0 A script to annotate variants using ANNOVAR
 # 01/03/2019; Mark Corbett; Update to match Ali's December 2018 version.  Now annotates multisample VCF.
 # 15/03/2019; Mark Corbett; Remove Eye gene list and replace with CP gene bed file.
 # 11/06/2019; Ali Gardner; Updated some databases in Annovar
-# 28/04/2020; Ali Gardner; Updated Annovar to version 24/10/19
 # 15/06/2020; Ali Gardner; Updated Clinvar, ID & Epilepsy lists
-# 01/09/2020; Ali Gardner; Added SplicAI data, Mackenzie & 5'UTR genes
 " 
 }
 
@@ -74,10 +72,10 @@ fi
 perl $AnnovarPATH/table_annovar.pl -thread 8 $AV_INPUT $AV_DB/ \
 --buildver $BUILD \
 --remove \
---protocol gene,phastConsElements46way,genomicSuperDups,esp6500siv2_all,ExAC.r0.1.filtered,1000g2015aug_all,UK10K-AF-all,cg69,Wellderly_v1-0-all,popfreq_max_20150413,avsnp150,snp138NonFlagged,clinvar_20210501,dbnsfp35a,\
-dbnsfp31a_interpro,dbscsnv11,regsnpintron,gwava,spidex,spliceai_filtered,\
+--protocol gene,phastConsElements46way,genomicSuperDups,esp6500siv2_all,ExAC.r0.1.filtered,1000g2015aug_all,UK10K-AF-all,cg69,Wellderly_v1-0-all,popfreq_max_20150413,avsnp150,snp138NonFlagged,clinvar_20200316,dbnsfp35a,\
+dbnsfp31a_interpro,dbscsnv11,regsnpintron,gwava,spidex,\
 dgvMerged,evoCpg,cpgIslandExt,evofold,gwasCatalog,mirCodeMicroRNAsites,switchDbTss,targetScanS,tfbsConsSites,vistaEnhancers,wgEncodeRegTfbsClusteredV3,wgRna \
---operation g,r,r,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,r,r,r,r,r,r,r,r,r,r,r,r \
+--operation g,r,r,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,r,r,r,r,r,r,r,r,r,r,r,r \
 --otherinfo \
 --nastring . \
 --csvout \
@@ -100,14 +98,6 @@ rm $AV_INPUT.$BUILD.bed_new $AV_INPUT.$BUILD\_bed
 perl $AnnovarPATH/annotate_variation.pl -regionanno -buildver $BUILD -dbtype bed -bedfile hg19_CPgenesNov2018.bed $AV_INPUT $AV_DB >> $1.pipeline.log 2>&1
 awk '{gsub("bed","CPgene",$1)}1' $AV_INPUT.$BUILD\_bed > $AV_INPUT.$BUILD.bed_new   # replace bed with CPgene
 awk -v OFS="\t" '$1=$1' $AV_INPUT.$BUILD.bed_new > $AV_INPUT.$BUILD\_CPgene  #Replace whitespaces with tabs in linux
-rm $AV_INPUT.$BUILD.bed_new $AV_INPUT.$BUILD\_bed
-perl $AnnovarPATH/annotate_variation.pl -regionanno -buildver $BUILD -dbtype bed -bedfile Mckenzie_hg19_genes_Aug20.bed $AV_INPUT $AV_DB >> $1.pipeline.log 2>&1
-awk '{gsub("bed","MckenzieGene",$1)}1' $AV_INPUT.$BUILD\_bed > $AV_INPUT.$BUILD.bed_new   # replace bed with Mckenzie_gene
-awk -v OFS="\t" '$1=$1' $AV_INPUT.$BUILD.bed_new > $AV_INPUT.$BUILD\_MckenzieGene  # Replace whitespaces with tabs in linux
-rm $AV_INPUT.$BUILD.bed_new $AV_INPUT.$BUILD\_bed
-perl $AnnovarPATH/annotate_variation.pl -regionanno -buildver $BUILD -dbtype bed -bedfile 5UTR_hg19_genes_Aug20.bed $AV_INPUT $AV_DB >> $1.pipeline.log 2>&1
-awk '{gsub("bed","5UTRGene",$1)}1' $AV_INPUT.$BUILD\_bed > $AV_INPUT.$BUILD.bed_new   # replace bed with 5UTR_gene
-awk -v OFS="\t" '$1=$1' $AV_INPUT.$BUILD.bed_new > $AV_INPUT.$BUILD\_5UTRGene  # Replace whitespaces with tabs in linux
 rm $AV_INPUT.$BUILD.bed_new $AV_INPUT.$BUILD\_bed
 perl $AnnovarPATH/annotate_variation.pl -regionanno -buildver $BUILD -dbtype bed -bedfile CMHg19_080914TH_50bp.bed $AV_INPUT $AV_DB >> $1.pipeline.log 2>&1
 awk '{gsub("bed","MCDGene",$1)}1' $AV_INPUT.$BUILD\_bed > $AV_INPUT.$BUILD.bed_new   # replace bed with MCDgene

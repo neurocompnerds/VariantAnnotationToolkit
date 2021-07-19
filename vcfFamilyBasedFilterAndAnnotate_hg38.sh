@@ -22,6 +22,7 @@ echo "# For processing VCFs and doing some intial filtering of variants
 # 15/09/2014; Mark Corbett; Update to suit ANNOVARv3.sh script
 # 03/02/2015; Mark Corbett; Update to put in strict variant filter
 # 15/09/2015; Mark Corbett; Parallelize variant annotation for loop
+# 21/01/2021; Ali Gardner; change columns & values for filtering line 126 awk as no UK10K or Wellderly, now gnomad_exome & genome
 #
 "
 }
@@ -101,10 +102,10 @@ vcf-contrast -n +$Affected -$Controls $inputDir/$VCF > $Family.common.vcf
 for Sample in $arrAnnotate; do
 	( 
 	mkdir $Sample
-	~/Documents/Scripts/gitHub/VariantAnnotationToolkit/VCFSplitWithGATKv4_ali.sh $Family.common.vcf $Sample
+	~/Documents/Scripts/gitHub/VariantAnnotationToolkit/VCFSplitWithGATKv4_hg38.sh $Family.common.vcf $Sample
 	mv $Sample.$Family.common.* $famDir/$Sample/
 	cd $Sample
-	~/Documents/Scripts/gitHub/VariantAnnotationToolkit/ANNOVARv3.sh $Sample.$Family.common.vcf
+	~/Documents/Scripts/gitHub/VariantAnnotationToolkit/ANNOVARv3_for_hg38.sh $Sample.$Family.common.vcf
 	./$Sample.$Family.common.vcf.CleanUp.sh
 	# Need this next line as normally key is removed in the ANNOVAR script
 	cut -f 1,2,4,5  $Sample.$Family.common.vcf.GenomeAnnotationsCombined.txt | sed 's,\t,-,g' > $Sample.key.txt
@@ -122,7 +123,7 @@ cp $famDir/$Sample/$Sample.$Family.common.vcf.GenomeAnnotationsCombined.txt $Fam
 		parallel --pipe --block 10M grep -F -w -f $famDir/$Aff/$Aff.key.txt < $Family.GenomeAnnotationsCombined.$Sample.txt > tmp.$Sample.txt
 		mv tmp.$Sample.txt $Family.GenomeAnnotationsCombined.$Sample.txt
 		head -n1 $Family.GenomeAnnotationsCombined.$Sample.txt > $Family.BestGeneCandidates.$Sample.txt # Save the header row
-		awk -F"\t" '$13 < 0.005 && $14 < 0.001 && $15 < 0.005 && $16 < 0.005 && $18 < 0.01 {print}' $Family.GenomeAnnotationsCombined.$Sample.txt |\
+		awk -F"\t" '$13 < 0.005 && $14 < 0.005 && $15 < 0.001 && $16 < 0.001 && $17 < 0.001 {print}' $Family.GenomeAnnotationsCombined.$Sample.txt |\
 		grep -Fwvf ~/Documents/Scripts/gitHub/VariantAnnotationToolkit/Func.Gene.Remove.txt - >> $Family.BestGeneCandidates.$Sample.txt # Variant frequency filters, exonic, splicing and PASS
 	done
 done
