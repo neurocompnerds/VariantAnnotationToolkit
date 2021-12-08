@@ -7,11 +7,11 @@ import sys, getopt, csv
 def usage():
     print(
 '''
-# preConceptionTesting.py Script to filter trios for rare possibly disease causing alleles in the child, 
+# trioKeyMatchingAfterANNOVAR_hg38.py Script to filter trios for rare possibly disease causing alleles in the child, 
 # covers IBD, comp het, X-linked, autosomal dominant and clinVar flagged genotypes from a multisample ANNOVAR file
 # outputs various filtered tables for further analysis in excel.
 #
-# Usage preConceptionTesting.py -i ANNOVAR.table.txt -c child_ID -m mother_ID -f father_ID | [ -h | --help ]
+# Usage trioKeyMatchingAfterANNOVAR_hg38.py -i ANNOVAR.table.txt -c child_ID -m mother_ID -f father_ID | [ -h | --help ]
 #
 # Options:
 # -i           /path/to/inputFile    REQUIRED: A multisample ANNOVAR table in tab delimited format
@@ -22,18 +22,20 @@ def usage():
 #
 # Script created by Mark Corbett on 20/12/2019
 # Contact: mark.corbett at adelaide.edu dot au
-# Edit History (Name; Date; Description)
+# Edit History (Date; Name; Description)
+# 08/12/2021; Mark; Add gnomADv3 geneotypes AF column to the 0.0001 filter list. Fix Gene.refgene. Change best gene candidate filter to whitelist.
 #
 '''
          )
 
 # Set initial values
 inputFile = ''
+geneTerms = ['exonic', 'splicing', 'UTR5', 'ncRNA_exonic', 'ncRNA_splicing']
 notGeneTerms = ['downstream', 'intergenic', 'intronic', 'ncRNA_exonic', 'ncRNA_intronic', 'ncRNA_splicing', 'ncRNA_UTR3', 'ncRNA_UTR5', 'upstream', 'UTR3', 'UTR5']
 filterTerms = ['.', 'PASS']
 ncSpliceTerms = ['splicing', 'intronic']
 filter005 = ['esp6500siv2_all', '1000g2015aug_all']
-filter0001 = ['exac03', 'gnomad211_exome', 'gnomad211_genome']
+filter0001 = ['exac03', 'gnomad211_exome', 'gnomad211_genome', 'AF']
 pathogenicFilter = ['Pathogenic', 'Likely_pathogenic']
 nullAlelles = ['0/0', '\./\.']
 
@@ -67,7 +69,7 @@ def bestGeneCandidatesFilter(df):
     df=df[df['FILTER'].isin(filterTerms)]
     df=df[(df[filter005].apply(pd.to_numeric, errors='coerce').fillna(0).lt(0.005)).all(axis=1)]
     df=df[(df[filter0001].apply(pd.to_numeric, errors='coerce').fillna(0).lt(0.0001)).all(axis=1)]
-    df=df[~df['Func.refGene'].isin(notGeneTerms)]
+    df=df[df['Func.refGene'].isin(geneTerms)]
     return df
 
 # Count the number of columns in the ANNOVAR table
@@ -98,26 +100,26 @@ homList.to_csv(childID+"ibdAndXl.BestGeneCandidates."+inputFile, sep='\t')
 
 # Compound het calls
 mNotfHets=ANNOVARtable[ANNOVARtable[samples[0]].str.match('0/1') & ANNOVARtable[samples[1]].str.contains('|'.join(nullAlelles)) & ANNOVARtable[samples[2]].str.match('0/1')]
-mGenes=pd.unique(mNotfHets['Gene.gene'])
+mGenes=pd.unique(mNotfHets['Gene.refgene'])
 fNotmHets=ANNOVARtable[ANNOVARtable[samples[0]].str.contains('|'.join(nullAlelles)) & ANNOVARtable[samples[1]].str.match('0/1') & ANNOVARtable[samples[2]].str.match('0/1')]
-fGenes=pd.unique(fNotmHets['Gene.gene'])
+fGenes=pd.unique(fNotmHets['Gene.refgene'])
 seriesCHgenes=pd.Series(mGenes.tolist() + fGenes.tolist())
 chGenes=seriesCHgenes[seriesCHgenes.duplicated()]
 compHets=pd.concat([mNotfHets, fNotmHets], axis=0, join='outer')
-compHets=compHets[compHets['Gene.gene'].isin(chGenes)] # All possible compHets
+compHets=compHets[compHets['Gene.refgene'].isin(chGenes)] # All possible compHets
 # Independently apply filters to mum and dad lists then filter the CH list
 filtmNotfHets=bestGeneCandidatesFilter(df=mNotfHets)
 filtfNotmHets=bestGeneCandidatesFilter(df=fNotmHets)
-mGenes=pd.unique(filtmNotfHets['Gene.gene'])
-fGenes=pd.unique(filtfNotmHets['Gene.gene'])
+mGenes=pd.unique(filtmNotfHets['Gene.refgene'])
+fGenes=pd.unique(filtfNotmHets['Gene.refgene'])
 seriesCHgenes=pd.Series(mGenes.tolist() + fGenes.tolist())
 chGenes=seriesCHgenes[seriesCHgenes.duplicated()]
-compHets=compHets[compHets['Gene.gene'].isin(chGenes)]
+compHets=compHets[compHets['Gene.refgene'].isin(chGenes)]
 compHets.to_csv(childID+".ch."+inputFile, sep='\t')
 spliceCandidates=compHets[compHets['Func.refGene'].isin(ncSpliceTerms)]
 spliceCandidates.to_csv(childID+".ch.SpliceCandidates."+inputFile, sep='\t')
 compHets=bestGeneCandidatesFilter(df=compHets)
-compHets=compHets[compHets['Gene.gene'].duplicated(keep=False)]  # Re-run the gene filter after the other filters
+compHets=compHets[compHets['Gene.refgene'].duplicated(keep=False)]  # Re-run the gene filter after the other filters
 compHets.to_csv(childID+".ch.BestGeneCandidates."+inputFile, sep='\t')
 
 # AD
