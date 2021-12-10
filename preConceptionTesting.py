@@ -84,25 +84,29 @@ hetList.to_csv("allSharedHetCalls.BestGeneCandidates."+inputFile, sep='\t')
 
 # Compound het calls
 mNotfHets=ANNOVARtable[ANNOVARtable[samples[0]].str.match('0/1') & ANNOVARtable[samples[1]].str.contains('|'.join(nullAlelles))]
-mGenes=pd.unique(mNotfHets['Gene.gene'])
+mGenes=pd.unique(mNotfHets['Gene.refGene'])
 fNotmHets=ANNOVARtable[ANNOVARtable[samples[0]].str.contains('|'.join(nullAlelles)) & ANNOVARtable[samples[1]].str.match('0/1')]
-fGenes=pd.unique(fNotmHets['Gene.gene'])
+fGenes=pd.unique(fNotmHets['Gene.refGene'])
 seriesCHgenes=pd.Series(mGenes.tolist() + fGenes.tolist())
 chGenes=seriesCHgenes[seriesCHgenes.duplicated()]
 compHets=pd.concat([mNotfHets, fNotmHets], axis=0, join='outer')
-compHets=compHets[compHets['Gene.gene'].isin(chGenes)] # All possible compHets
+compHets=compHets[compHets['Gene.refGene'].isin(chGenes)] # All possible compHets
 # Independently apply filters to mum and dad lists then filter the CH list
 filtmNotfHets=bestGeneCandidatesFilter(df=mNotfHets)
 filtfNotmHets=bestGeneCandidatesFilter(df=fNotmHets)
-mGenes=pd.unique(filtmNotfHets['Gene.gene'])
-fGenes=pd.unique(filtfNotmHets['Gene.gene'])
+mGenes=pd.unique(filtmNotfHets['Gene.refGene'])
+fGenes=pd.unique(filtfNotmHets['Gene.refGene'])
 seriesCHgenes=pd.Series(mGenes.tolist() + fGenes.tolist())
 chGenes=seriesCHgenes[seriesCHgenes.duplicated()]
-compHets=compHets[compHets['Gene.gene'].isin(chGenes)]
+compHets=compHets[compHets['Gene.refGene'].isin(chGenes)]
 compHets=bestGeneCandidatesFilter(df=compHets)
-compHets=compHets[compHets['Gene.gene'].duplicated(keep=False)]  # Re-run the gene filter after the other filters
+compHets=compHets[compHets['Gene.refGene'].duplicated(keep=False)]  # Re-run the gene filter after the other filters
 compHets.to_csv("allcompHetCalls.BestGeneCandidates."+inputFile, sep='\t')
 
 # X-linked
 xList=filtmNotfHets[filtmNotfHets['chr'].str.contains("X", na=False)]
 xList.to_csv("allX-linked.BestGeneCandidates."+inputFile, sep='\t')
+
+# ClinVar
+cvList=ANNOVARtable[~ANNOVARtable[samples[0,1]].str.contains('|'.join(nullAlelles)) & ANNOVARtable['CLNSIG'].str.contains('|'.join(pathogenicFilter))]
+cvList.to_csv("clinVar."+inputFile, sep='\t')

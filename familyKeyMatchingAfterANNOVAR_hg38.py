@@ -112,5 +112,5 @@ spliceCandidates=dfCore[dfCore['Func.refGene'].isin(ncSpliceTerms)]
 spliceCandidates.to_csv("het.SpliceCandidates."+inputFile, sep='\t')
 
 # ClinVar
-cvList=ANNOVARtable[~ANNOVARtable[samples[2]].str.contains('|'.join(nullAlelles)) & ANNOVARtable['CLINSIG'].str.contains('|'.join(pathogenicFilter))]
+cvList=ANNOVARtable[~ANNOVARtable[samples[2]].str.contains('|'.join(nullAlelles)) & ANNOVARtable['CLNSIG'].str.contains('|'.join(pathogenicFilter))]
 cvList.to_csv(childID+".clinVar."+inputFile, sep='\t')
