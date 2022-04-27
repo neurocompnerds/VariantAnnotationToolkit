@@ -21,7 +21,7 @@ def usage():
 # Contact: mark.corbett at adelaide.edu dot au
 # Edit History (Name; Date; Description)
 # Ali Gardner; 21/01/2021; Tweak to use with hg38 (no UK10, Wellderley, Exac.ro.1.filtered), change Func.gene to Func.refGene
-#
+# Thomas Litster; 27/04.2022; Added clinvar search (Will search for clinvar variants in all samples provided, even variant is not shared)
 '''
          )
 
@@ -113,6 +113,12 @@ bgc.to_csv("het.BestGeneCandidates."+inputFile, sep='\t')
 spliceCandidates=dfCore[dfCore['Func.refGene'].isin(ncSpliceTerms)]
 spliceCandidates.to_csv("het.SpliceCandidates."+inputFile, sep='\t')
 
-# ClinVar
-cvList=ANNOVARtable[~ANNOVARtable[samples[2]].str.contains('|'.join(nullAlelles)) & ANNOVARtable['CLNSIG'].str.contains('|'.join(pathogenicFilter))]
-cvList.to_csv(childID+".clinVar."+inputFile, sep='\t')
+# Find any ClinVar variants
+SampleStr=''
+CLNSIGStr=''
+for s in samples:
+    CLNSIGStr = CLNSIGStr + "~ANNOVARtable['" + s + "'].str.contains('|'.join(nullAlelles)) | "
+    SampleStr = SampleStr + s + "_"
+
+cvList=ANNOVARtable[eval(CLNSIGStr[:-3]) & ANNOVARtable['CLNSIG'].str.contains('|'.join(pathogenicFilter))]
+cvList.to_csv(SampleStr+"clinVar."+inputFile, sep='\t')
