@@ -103,9 +103,9 @@ cut -f 14-16 $ComboFile.txt > $OUTPREFIX.tmp.2b.txt # exac03,gnomad_exome,gnomad
 cut -f 28-33 $GenomeFile.txt > $OUTPREFIX.tmp.3a.txt # snp150, clinvar (5cols)
 cut -f 6,7,8,10,12 $ComboFile.txt > $OUTPREFIX.tmp.3b.txt # DDG2P,EpilepsyGene,CPGene,IDGene,MCDGene
 cut -f 9,11,13 $ComboFile.txt > $OUTPREFIX.tmp.3c.txt # GDIScores,LoFToolScores,RVISExACscores
-cut -f 34-125 $GenomeFile.txt > $OUTPREFIX.tmp.4.txt # All the other annotations
+cut -f 34-106 $GenomeFile.txt > $OUTPREFIX.tmp.4.txt # All the other annotations
 cut -f 15-27 $GenomeFile.txt > $OUTPREFIX.tmp.4b.txt # gnomad30_genome
-cut -f 126-$NColsGenomeFile $GenomeFile.txt > $OUTPREFIX.tmp.5.txt # VCF info
+cut -f 107-$NColsGenomeFile $GenomeFile.txt > $OUTPREFIX.tmp.5.txt # VCF info
 
 # Replace Otherinfo labels with VCF fields"
 if [ "${OUTPREFIX:(-2)}" = "gz" ]; then
@@ -133,4 +133,4 @@ cut -f 1,2,4,5 $OUTPREFIX.tmp.1.txt | sed 's,\t,-,g' > $OUTPREFIX.tmp.key.txt
 paste $OUTPREFIX.tmp.1.txt $OUTPREFIX.tmp.2a.txt $OUTPREFIX.tmp.2b.txt $OUTPREFIX.tmp.3a.txt $OUTPREFIX.tmp.3b.txt $OUTPREFIX.tmp.3c.txt $OUTPREFIX.tmp.4.txt $OUTPREFIX.tmp.4b.txt $OUTPREFIX.tmp.5.txt $OUTPREFIX.tmp.key.txt > $OUTPREFIX.GenomeAnnotationsCombined.txt
 
 # Clean up temp files
-#rm $OUTPREFIX.tmp.1.txt $OUTPREFIX.tmp.2a.txt $OUTPREFIX.tmp.2b.txt $OUTPREFIX.tmp.3a.txt $OUTPREFIX.tmp.3b.txt $OUTPREFIX.tmp.3c.txt $OUTPREFIX.tmp.4.txt $OUTPREFIX.tmp.4b.txt $OUTPREFIX.tmp.5.txt $ComboFile.txt $GenomeFile.txt
+rm $OUTPREFIX.tmp.1.txt $OUTPREFIX.tmp.2a.txt $OUTPREFIX.tmp.2b.txt $OUTPREFIX.tmp.3a.txt $OUTPREFIX.tmp.3b.txt $OUTPREFIX.tmp.3c.txt $OUTPREFIX.tmp.4.txt $OUTPREFIX.tmp.4b.txt $OUTPREFIX.tmp.5.txt $ComboFile.txt $GenomeFile.txt
