@@ -4,7 +4,7 @@
 # Variables that usually don't need changing once set for your system
 AnnovarPATH=/opt/annovar # Where the Annovar program is
 SCRIPTPATH=/home/neuro/Documents/Scripts/gitHub/VariantAnnotationToolkit # Where the python & perl scripts for Annovar or other general scripts are
-BUILD=hg38 # Genome build used by ANNOVAR either hg18 or $BUILD. This will also be incorporated into file names
+BUILD=Hs38DH # Genome build used by ANNOVAR either hg18 or $BUILD. This will also be incorporated into file names
 AV_INPUT=$1.avinput
 AV_DB=/opt/annovar/humandb/hg38/
 
@@ -72,7 +72,7 @@ fi
 perl $AnnovarPATH/table_annovar.pl -thread 8 $AV_INPUT $AV_DB/ \
 --buildver $BUILD \
 --remove \
---protocol gene,phastConsElements100way,genomicSuperDups,esp6500siv2_all,1000g2015aug_all,gnomad30_genome,avsnp150,clinvar_20210501,dbnsfp35a,\
+--protocol gene,phastConsElements100way,genomicSuperDups,esp6500siv2_all,1000g2015aug_all,gnomad30_genome,avsnp150,clinvar_20220320,dbnsfp41a,\
 dbnsfp31a_interpro,dbscsnv11,regsnpintron,spliceai_filtered,gene4denovo201907,\
 dgvMerged,evoCpg,cpgIslandExt,evofold,gwasCatalog,switchDbTss,targetScanS,vistaEnhancers,wgRna \
 --operation g,r,r,f,f,f,f,f,f,f,f,f,f,f,r,r,r,r,r,r,r,r,r \
@@ -87,11 +87,11 @@ perl $AnnovarPATH/annotate_variation.pl --filter --buildver $BUILD --thread 8 --
 perl $AnnovarPATH/annotate_variation.pl --filter --buildver $BUILD --thread 8 --dbtype gnomad211_genome $AV_INPUT $AV_DB/ >> $1.pipeline.log 2>&1
 
 # Generate special regionanno files
-perl $AnnovarPATH/annotate_variation.pl -regionanno -buildver $BUILD -dbtype bed -bedfile Epilepsy_hg38_genes_Mar21.bed $AV_INPUT $AV_DB >> $1.pipeline.log 2>&1
+perl $AnnovarPATH/annotate_variation.pl -regionanno -buildver $BUILD -dbtype bed -bedfile Epilepsy_hg38_genes_Mar22.bed $AV_INPUT $AV_DB >> $1.pipeline.log 2>&1
 awk '{gsub("bed","EpilepsyGene",$1)}1' $AV_INPUT.$BUILD\_bed > $AV_INPUT.$BUILD.bed_new   # replace bed with Epilepsy_gene
 awk -v OFS="\t" '$1=$1' $AV_INPUT.$BUILD.bed_new > $AV_INPUT.$BUILD\_EpilepsyGene  #Replace whitespaces with tabs in linux
 rm $AV_INPUT.$BUILD.bed_new $AV_INPUT.$BUILD\_bed
-perl $AnnovarPATH/annotate_variation.pl -regionanno -buildver $BUILD -dbtype bed -bedfile ID_hg38_genes_Mar21.bed $AV_INPUT $AV_DB >> $1.pipeline.log 2>&1
+perl $AnnovarPATH/annotate_variation.pl -regionanno -buildver $BUILD -dbtype bed -bedfile ID_hg38_genes_Feb22.bed $AV_INPUT $AV_DB >> $1.pipeline.log 2>&1
 awk '{gsub("bed","IDGene",$1)}1' $AV_INPUT.$BUILD\_bed > $AV_INPUT.$BUILD.bed_new   # replace bed with ID_gene
 awk -v OFS="\t" '$1=$1' $AV_INPUT.$BUILD.bed_new > $AV_INPUT.$BUILD\_IDGene  # Replace whitespaces with tabs in linux
 rm $AV_INPUT.$BUILD.bed_new $AV_INPUT.$BUILD\_bed

@@ -90,34 +90,34 @@ dnList.to_csv(childID+".dn.BestGeneCandidates."+inputFile, sep='\t')
 
 # AR, identical by descent and X-linked 
 homList=ANNOVARtable[~ANNOVARtable[samples[0]].str.match('1/1') & ~ANNOVARtable[samples[1]].str.match('1/1') & ANNOVARtable[samples[2]].str.match('1/1')]
-homList.to_csv(childID+"ibdAndXl."+inputFile, sep='\t')
+homList.to_csv(childID+".ibdAndXl."+inputFile, sep='\t')
 spliceCandidates=homList[homList['Func.refGene'].isin(ncSpliceTerms)]
 spliceCandidates.to_csv(childID+".ibdAndXl.SpliceCandidates."+inputFile, sep='\t')
 homList=bestGeneCandidatesFilter(df=homList)
-homList.to_csv(childID+"ibdAndXl.BestGeneCandidates."+inputFile, sep='\t')
+homList.to_csv(childID+".ibdAndXl.BestGeneCandidates."+inputFile, sep='\t')
 
 # Compound het calls
 mNotfHets=ANNOVARtable[ANNOVARtable[samples[0]].str.match('0/1') & ANNOVARtable[samples[1]].str.contains('|'.join(nullAlelles)) & ANNOVARtable[samples[2]].str.match('0/1')]
-mGenes=pd.unique(mNotfHets['Gene.gene'])
+mGenes=pd.unique(mNotfHets['Gene.refGene'])
 fNotmHets=ANNOVARtable[ANNOVARtable[samples[0]].str.contains('|'.join(nullAlelles)) & ANNOVARtable[samples[1]].str.match('0/1') & ANNOVARtable[samples[2]].str.match('0/1')]
-fGenes=pd.unique(fNotmHets['Gene.gene'])
+fGenes=pd.unique(fNotmHets['Gene.refGene'])
 seriesCHgenes=pd.Series(mGenes.tolist() + fGenes.tolist())
 chGenes=seriesCHgenes[seriesCHgenes.duplicated()]
 compHets=pd.concat([mNotfHets, fNotmHets], axis=0, join='outer')
-compHets=compHets[compHets['Gene.gene'].isin(chGenes)] # All possible compHets
+compHets=compHets[compHets['Gene.refGene'].isin(chGenes)] # All possible compHets
 # Independently apply filters to mum and dad lists then filter the CH list
 filtmNotfHets=bestGeneCandidatesFilter(df=mNotfHets)
 filtfNotmHets=bestGeneCandidatesFilter(df=fNotmHets)
-mGenes=pd.unique(filtmNotfHets['Gene.gene'])
-fGenes=pd.unique(filtfNotmHets['Gene.gene'])
+mGenes=pd.unique(filtmNotfHets['Gene.refGene'])
+fGenes=pd.unique(filtfNotmHets['Gene.refGene'])
 seriesCHgenes=pd.Series(mGenes.tolist() + fGenes.tolist())
 chGenes=seriesCHgenes[seriesCHgenes.duplicated()]
-compHets=compHets[compHets['Gene.gene'].isin(chGenes)]
+compHets=compHets[compHets['Gene.refGene'].isin(chGenes)]
 compHets.to_csv(childID+".ch."+inputFile, sep='\t')
 spliceCandidates=compHets[compHets['Func.refGene'].isin(ncSpliceTerms)]
 spliceCandidates.to_csv(childID+".ch.SpliceCandidates."+inputFile, sep='\t')
 compHets=bestGeneCandidatesFilter(df=compHets)
-compHets=compHets[compHets['Gene.gene'].duplicated(keep=False)]  # Re-run the gene filter after the other filters
+compHets=compHets[compHets['Gene.refGene'].duplicated(keep=False)]  # Re-run the gene filter after the other filters
 compHets.to_csv(childID+".ch.BestGeneCandidates."+inputFile, sep='\t')
 
 # AD
@@ -129,5 +129,5 @@ hetList=bestGeneCandidatesFilter(df=hetList)
 hetList.to_csv(childID+".allHets.BestGeneCandidates."+inputFile, sep='\t')
 
 # ClinVar
-cvList=ANNOVARtable[~ANNOVARtable[samples[2]].str.contains('|'.join(nullAlelles)) & ANNOVARtable['CLINSIG'].str.contains('|'.join(pathogenicFilter))]
+cvList=ANNOVARtable[~ANNOVARtable[samples[2]].str.contains('|'.join(nullAlelles)) & ANNOVARtable['CLNSIG'].str.contains('|'.join(pathogenicFilter))]
 cvList.to_csv(childID+".clinVar."+inputFile, sep='\t')

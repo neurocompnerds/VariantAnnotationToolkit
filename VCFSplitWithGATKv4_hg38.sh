@@ -41,7 +41,7 @@ OUTPREFIX=$2 #List sample name from VCF file to extract as the second argument
 GATKINDEX=$3
 
 # Variables that usually don't need changing once set for your system
-GATKPATH=/home/neuro/Documents/Ali/gatk/build/libs # Where the GATK program.  Be mindful that GATK is under rapid development so things may change over time!
+GATKPATH=/home/neuro/Documents/Ali/Software_107Gb/gatk/build/libs # Where the GATK program.  Be mindful that GATK is under rapid development so things may change over time!
 GATKREFPATH=~/Public/RefSeqIndexAllPrograms #Refseq index library locations
 if [ -z "$GATKINDEX" ]; then
 	GATKINDEX=hs38DH.fa # name of the genome reference

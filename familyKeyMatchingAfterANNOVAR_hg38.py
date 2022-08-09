@@ -21,7 +21,7 @@ def usage():
 # Contact: mark.corbett at adelaide.edu dot au
 # Edit History (Name; Date; Description)
 # Ali Gardner; 21/01/2021; Tweak to use with hg38 (no UK10, Wellderley, Exac.ro.1.filtered), change Func.gene to Func.refGene
-#
+# Thomas Litster; 27/04.2022; Added clinvar search (Will search for clinvar variants in all samples provided, even if variant is not shared)
 '''
          )
 
@@ -33,6 +33,8 @@ filterTerms = ['.', 'PASS']
 ncSpliceTerms = ['splicing', 'intronic']
 filter005 = ['esp6500siv2_all', '1000g2015aug_all']
 filter0001 = ['exac03', 'gnomad211_exome', 'gnomad211_genome']
+pathogenicFilter = ['Pathogenic', 'Likely_pathogenic']
+nullAlelles = ['0/0', '\./\.']
 # Read command line arguments
 try:
     opts, args = getopt.getopt(sys.argv[1:],'hi:s:',['help'])
@@ -110,3 +112,13 @@ bgc.to_csv("het.BestGeneCandidates."+inputFile, sep='\t')
 # Find cadidates to test with spliceAI
 spliceCandidates=dfCore[dfCore['Func.refGene'].isin(ncSpliceTerms)]
 spliceCandidates.to_csv("het.SpliceCandidates."+inputFile, sep='\t')
+
+# Find any ClinVar variants
+SampleStr=''
+CLNSIGStr=''
+for s in samples:
+    CLNSIGStr = CLNSIGStr + "~ANNOVARtable['" + s + "'].str.contains('|'.join(nullAlelles)) | "
+    SampleStr = SampleStr + s + "_"
+
+cvList=ANNOVARtable[eval(CLNSIGStr[:-3]) & ANNOVARtable['CLNSIG'].str.contains('|'.join(pathogenicFilter))]
+cvList.to_csv(SampleStr+"clinVar."+inputFile, sep='\t')
