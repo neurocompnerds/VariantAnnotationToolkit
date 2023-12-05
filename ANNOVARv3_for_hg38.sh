@@ -3,7 +3,7 @@
 
 # Variables that usually don't need changing once set for your system
 AnnovarPATH=/opt/annovar # Where the Annovar program is
-SCRIPTPATH=/home/neuro/Documents/Scripts/gitHub/VariantAnnotationToolkit # Where the python & perl scripts for Annovar or other general scripts are
+SCRIPTPATH="$(dirname "$(readlink -f "$0")")" # Where the python & perl scripts for Annovar or other general scripts are
 BUILD=Hs38DH # Genome build used by ANNOVAR either hg18 or $BUILD. This will also be incorporated into file names
 AV_INPUT=$1.avinput
 AV_DB=/opt/annovar/humandb/hg38/
