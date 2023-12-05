@@ -118,4 +118,4 @@ $SCRIPTPATH/AnnovarGenomeSummaryCombo.v2_for_hg38.sh -c $AV_INPUT.combo.csv -g $
 # Add files to clean up script
 echo "rm $AV_INPUT" >> $1.CleanUp.sh
 echo "rm $AV_INPUT.$BUILD\_*" >> $1.CleanUp.sh
-	
+
