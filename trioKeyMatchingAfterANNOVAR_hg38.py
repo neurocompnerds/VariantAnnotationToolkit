@@ -84,7 +84,7 @@ ANNOVARtable=pd.read_csv(inputFile, sep='\t', index_col = num_cols)
 samples = [mumID, dadID, childID]
 
 # de novo
-dnList=ANNOVARtable[ANNOVARtable[samples[0]].str.contains('|'.join(nullAlelles)) & ANNOVARtable[samples[1]].str.contains('|'.join(nullAlelles)) & ANNOVARtable[samples[2]].str.match(pat = '(0/1)|(0|1)')]
+dnList=ANNOVARtable[ANNOVARtable[samples[0]].str.contains('|'.join(nullAlelles)) & ANNOVARtable[samples[1]].str.contains('|'.join(nullAlelles)) & ANNOVARtable[samples[2]].str.match(pat = '(0/1)|(0\|1)|(1\|0)')]
 dnList.to_csv(childID+".dn."+inputFile, sep='\t')
 spliceCandidates=dnList[dnList['Func.refGene'].isin(ncSpliceTerms)]
 spliceCandidates.to_csv(childID+".dn.SpliceCandidates."+inputFile, sep='\t')
@@ -92,7 +92,7 @@ dnList=bestGeneCandidatesFilter(df=dnList)
 dnList.to_csv(childID+".dn.BestGeneCandidates."+inputFile, sep='\t')
 
 # AR, identical by descent and X-linked 
-homList=ANNOVARtable[~ANNOVARtable[samples[0]].str.match(pat = '(1/1)|(1|1)') & ~ANNOVARtable[samples[1]].str.match(pat = '(1/1)|(1|1)') & ANNOVARtable[samples[2]].str.match(pat = '(1/1)|(1|1)')]
+homList=ANNOVARtable[~ANNOVARtable[samples[0]].str.match(pat = '(1/1)|(1\|1)') & ~ANNOVARtable[samples[1]].str.match(pat = '(1/1)|(1\|1)') & ANNOVARtable[samples[2]].str.match(pat = '(1/1)|(1\|1)')]
 homList.to_csv(childID+".ibdAndXl."+inputFile, sep='\t')
 spliceCandidates=homList[homList['Func.refGene'].isin(ncSpliceTerms)]
 spliceCandidates.to_csv(childID+".ibdAndXl.SpliceCandidates."+inputFile, sep='\t')
@@ -100,9 +100,9 @@ homList=bestGeneCandidatesFilter(df=homList)
 homList.to_csv(childID+".ibdAndXl.BestGeneCandidates."+inputFile, sep='\t')
 
 # Compound het calls
-mNotfHets=ANNOVARtable[ANNOVARtable[samples[0]].str.match(pat = '(0/1)|(0|1)') & ANNOVARtable[samples[1]].str.contains('|'.join(nullAlelles)) & ANNOVARtable[samples[2]].str.match(pat = '(0/1)|(0|1)')]
+mNotfHets=ANNOVARtable[ANNOVARtable[samples[0]].str.match(pat = '(0/1)|(0\|1)|(1\|0)') & ANNOVARtable[samples[1]].str.contains('|'.join(nullAlelles)) & ANNOVARtable[samples[2]].str.match(pat = '(0/1)|(0\|1)|(1\|0)')]
 mGenes=pd.unique(mNotfHets['Gene.refGene'])
-fNotmHets=ANNOVARtable[ANNOVARtable[samples[0]].str.contains('|'.join(nullAlelles)) & ANNOVARtable[samples[1]].str.match(pat = '(0/1)|(0|1)') & ANNOVARtable[samples[2]].str.match(pat = '(0/1)|(0|1)')]
+fNotmHets=ANNOVARtable[ANNOVARtable[samples[0]].str.contains('|'.join(nullAlelles)) & ANNOVARtable[samples[1]].str.match(pat = '(0/1)|(0\|1)|(1\|0)') & ANNOVARtable[samples[2]].str.match(pat = '(0/1)|(0\|1)|(1\|0)')]
 fGenes=pd.unique(fNotmHets['Gene.refGene'])
 seriesCHgenes=pd.Series(mGenes.tolist() + fGenes.tolist())
 chGenes=seriesCHgenes[seriesCHgenes.duplicated()]
@@ -124,7 +124,7 @@ compHets=compHets[compHets['Gene.refGene'].duplicated(keep=False)]  # Re-run the
 compHets.to_csv(childID+".ch.BestGeneCandidates."+inputFile, sep='\t')
 
 # AD
-hetList=ANNOVARtable[ANNOVARtable[samples[2]].str.match(pat = '(0/1)|(0|1)')]
+hetList=ANNOVARtable[ANNOVARtable[samples[2]].str.match(pat = '(0/1)|(0\|1)|(1\|0)')]
 #hetList.to_csv("allHets."+inputFile, sep='\t') #Not likely to be worth writing out
 spliceCandidates=hetList[hetList['Func.refGene'].isin(ncSpliceTerms)]
 spliceCandidates.to_csv(childID+".allHets.SpliceCandidates."+inputFile, sep='\t')

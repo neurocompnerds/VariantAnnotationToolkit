@@ -78,7 +78,7 @@ with open(inputFile) as f:
 ANNOVARtable=pd.read_csv(inputFile, sep='\t', index_col = num_cols)
 samples = [mumID, dadID]
 
-hetList=ANNOVARtable[ANNOVARtable[samples[0]].str.match(pat = '(0/1)|(0|1)') & ANNOVARtable[samples[1]].str.match(pat = '(0/1)|(0|1)')]
+hetList=ANNOVARtable[ANNOVARtable[samples[0]].str.match(pat = '(0/1)|(0\|1)|(1\|0)') & ANNOVARtable[samples[1]].str.match(pat = '(0/1)|(0\|1)|(1\|0)')]
 hetList.to_csv("allSharedHetCalls."+inputFile, sep='\t')
 
 #Generic filters for most likely pathogenic
@@ -86,9 +86,9 @@ hetList=bestGeneCandidatesFilter(df=hetList)
 hetList.to_csv("allSharedHetCalls.BestGeneCandidates."+inputFile, sep='\t')
 
 # Compound het calls
-mNotfHets=ANNOVARtable[ANNOVARtable[samples[0]].str.match(pat = '(0/1)|(0|1)') & ANNOVARtable[samples[1]].str.contains('|'.join(nullAlelles))]
+mNotfHets=ANNOVARtable[ANNOVARtable[samples[0]].str.match(pat = '(0/1)|(0\|1)|(1\|0)') & ANNOVARtable[samples[1]].str.contains('|'.join(nullAlelles))]
 mGenes=pd.unique(mNotfHets['Gene.refGene'])
-fNotmHets=ANNOVARtable[ANNOVARtable[samples[0]].str.contains('|'.join(nullAlelles)) & ANNOVARtable[samples[1]].str.match(pat = '(0/1)|(0|1)')]
+fNotmHets=ANNOVARtable[ANNOVARtable[samples[0]].str.contains('|'.join(nullAlelles)) & ANNOVARtable[samples[1]].str.match(pat = '(0/1)|(0\|1)|(1\|0)')]
 fGenes=pd.unique(fNotmHets['Gene.refGene'])
 seriesCHgenes=pd.Series(mGenes.tolist() + fGenes.tolist())
 chGenes=seriesCHgenes[seriesCHgenes.duplicated()]

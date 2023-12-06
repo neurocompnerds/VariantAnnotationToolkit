@@ -78,7 +78,7 @@ elif sampleFile !='':
 dfCore=coreTable
 for s in samples: # Maybe this loop could be an apply function?
     currentSampleList=ANNOVARtable[[s]]
-    homList=currentSampleList[currentSampleList[s].str.match(pat = '(1/1)|(1|1)')]
+    homList=currentSampleList[currentSampleList[s].str.match(pat = '(1/1)|(1\|1)')]
     dfCore = pd.concat([dfCore,homList], axis=1, join='inner') # Add , sort='False' once Ubuntu is upgraded
 
 dfCore.to_csv("ibdAndXl."+inputFile, sep='\t')
@@ -100,7 +100,7 @@ spliceCandidates.to_csv("ibdAndXl.SpliceCandidates."+inputFile, sep='\t')
 dfCore=coreTable 
 for s in samples:  
     currentSampleList=ANNOVARtable[[s]]
-    homList=currentSampleList[currentSampleList[s].str.match(pat = '(0/1)|(0|1)')]
+    homList=currentSampleList[currentSampleList[s].str.match(pat = '(0/1)|(0\|1)|(1\|0)')]
     dfCore = pd.concat([dfCore,homList], axis=1, join='inner') # Add , sort='False' once Ubuntu is upgraded
 
 dfCore.to_csv("het."+inputFile, sep='\t')
