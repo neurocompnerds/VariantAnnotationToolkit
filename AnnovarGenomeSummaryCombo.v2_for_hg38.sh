@@ -36,6 +36,7 @@ echo "## AnnovarGenomeSummaryCombo.sh -c ComboFile.csv -g GenomeSummaryFile.csv 
 # 11/06/2019; Ali Gardner; Updated some databases in Annovar
 # 27/03/2020; Mark Corbett; Fix the annoying otherInfo labels
 # 11/06/2020; Ali Gardner; Update cols for hg38 databases
+# 26/02/2025; Mark Corbett; Update cols for new databases
 "
 }
 
@@ -98,12 +99,12 @@ NColsGenomeFile=$(awk -F "\t" 'FNR == 2 {print NF}' $GenomeFile.txt)
 
 # Combine columns (specific to how ANNOVAR is run so may or may not work perfectly)
 cut -f 1-5 $ComboFile.txt > $OUTPREFIX.tmp.1.txt # chr,start,end,ref,obs
-cut -f 6-14 $GenomeFile.txt > $OUTPREFIX.tmp.2a.txt # Func.gene,Gene.refGene,GeneDetail,ExonicFunc,AAChange,Conserved,SegDup,ESP6500siv2_ALL,1000g2015aug_ALL
-cut -f 14-16 $ComboFile.txt > $OUTPREFIX.tmp.2b.txt # exac03,gnomad_exome,gnomad_genome
-cut -f 28-33 $GenomeFile.txt > $OUTPREFIX.tmp.3a.txt # snp150, clinvar (5cols)
-cut -f 6,7,8,10,12 $ComboFile.txt > $OUTPREFIX.tmp.3b.txt # DDG2P,EpilepsyGene,CPGene,IDGene,MCDGene
-cut -f 9,11,13 $ComboFile.txt > $OUTPREFIX.tmp.3c.txt # GDIScores,LoFToolScores,RVISExACscores
-cut -f 34-106 $GenomeFile.txt > $OUTPREFIX.tmp.4.txt # All the other annotations
+cut -f 6-14 $GenomeFile.txt > $OUTPREFIX.tmp.2a.txt # Func.refGene,Gene.refGene,GeneDetail,ExonicFunc,AAChange,Conserved,SegDup,ESP6500siv2_ALL,1000g2015aug_ALL
+cut -f 16-18 $ComboFile.txt > $OUTPREFIX.tmp.2b.txt # exac03,gnomad_exome,gnomad312_genome
+cut -f 28-33 $GenomeFile.txt > $OUTPREFIX.tmp.3a.txt # snp151, clinvar (5cols)
+cut -f 6,7,8,10,12,15,19,23 $ComboFile.txt > $OUTPREFIX.tmp.3b.txt # CPGene,DDG2P,EpilepsyGene,IDGene,MCDGene,burden_asd_panel,mega_asd_panel,steroid_genes
+cut -f 9,11,13,14,20,21,22 $ComboFile.txt > $OUTPREFIX.tmp.3c.txt # GDIScores,LoFToolScores,RVISExACscores,Zscores,pLI,oe_scores (x2)
+cut -f 34-106 $GenomeFile.txt > $OUTPREFIX.tmp.4.txt # All the other annotations finishing with wgRna
 cut -f 15-27 $GenomeFile.txt > $OUTPREFIX.tmp.4b.txt # gnomad30_genome
 cut -f 107-$NColsGenomeFile $GenomeFile.txt > $OUTPREFIX.tmp.5.txt # VCF info
 

@@ -73,7 +73,7 @@ elif sampleFile !='':
 for s in samples:
     currentSampleList=ANNOVARtable[[s]]
     if keepRefs == False :
-        currentSampleList=currentSampleList[~currentSampleList[s].str.match('0/0')]
+        currentSampleList=currentSampleList[~currentSampleList[s].str.match(pat='(0/0) | (0\|0) | (./.)')]
         output = pd.concat([coreTable,currentSampleList], axis=1, join='inner') # Add , sort='False' once Ubuntu is upgraded
     elif keepRefs == True :
         output = pd.concat([coreTable,currentSampleList], axis=1, join='inner') # Add , sort='False' once Ubuntu is upgraded
