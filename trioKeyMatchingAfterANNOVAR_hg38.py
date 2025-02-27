@@ -38,7 +38,7 @@ ncSpliceTerms = ['splicing', 'intronic']
 filter005 = ['esp6500siv2_all', '1000g2015aug_all']
 filter0001 = ['exac03', 'gnomad211_exome', 'gnomad312_genome', 'AF']
 pathogenicFilter = ['Pathogenic', 'Likely_pathogenic']
-nullAlelles = ['0/0', '0|0', '\./\.']
+nullAlelles = ['0/0', '0\|0', '\./\.']
 
 # Read command line arguments
 try:
