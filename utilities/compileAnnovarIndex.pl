@@ -18,10 +18,11 @@ open(my $in, "<", $input_file) or die "Couldn't open $input_file for indexing\n"
 my $previous_file_position = tell $in;
 
 while (my $ln = <$in>) {
-	
-	#Check input file. Some are (chr,start,stop) and others are (id,chr,start,stop).
-	#If you have the latter you'll need to change the next line to account for the id column   
-	my ($chr,$start,$stop) = split "\t", $ln;
+    next if $ln =~ /^#/;  # Skip header lines starting with '#'
+    
+    #Check input file. Some are (chr,start,stop) and others are (id,chr,start,stop).
+    #If you have the latter you'll need to change the next line to account for the id column   
+    my ($chr,$start,$stop) = split "\t", $ln;
 	my $bin_start = int($start/$bin_size) * $bin_size;
 	my $current_file_position = tell $in;
 
