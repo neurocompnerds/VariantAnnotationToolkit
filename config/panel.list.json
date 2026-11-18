@@ -1,0 +1,50 @@
+[
+  {
+    "name":"ID",
+    "long_name":"Intellectual disability",
+    "data_source_name": "Genomics_England_PanelApp",
+    "data_format": "JSON",
+    "output_format": "BED",
+    "URL":"https://panelapp.genomicsengland.co.uk/api/v1/panels/285/"
+  },
+  {
+    "name":"ASD",
+    "long_name":"Autism spectrum disorders",
+    "data_source_name": "SFARI_GENE",
+    "data_format": "CSV",
+    "output_format": "BED",
+    "URL":"https://gene.sfari.org//wp-content/themes/sfari-gene/utilities/download-csv.php?api-endpoint=genes"
+  },
+  {
+    "name":"Epilepsy",
+    "long_name":"Epilepsy",
+    "data_source_name": "Genes4Epilepsy",
+    "data_format": "TSV",
+    "output_format": "BED",
+    "URL":"https://api.github.com/repos/bahlolab/Genes4Epilepsy/releases/latest"
+  },
+  {
+    "name":"DDG2P",
+    "long_name":"Developmental disorder genes to phenotype",
+    "data_source_name": "Genomics_England_PanelApp",
+    "data_format": "JSON",
+    "output_format": "DDG2P",
+    "URL":"https://panelapp.genomicsengland.co.uk/api/v1/panels/484/"
+  },
+  {
+    "name":"CP",
+    "long_name":"Cerebral palsy",
+    "data_source_name": "PanelApp_Australia",
+    "data_format": "JSON",
+    "output_format": "BED",
+    "URL":"https://panelapp-aus.org/api/v1/panels/73/"
+  },
+  {
+    "name":"BBS",
+    "long_name":"Bardet Biedl syndrome",
+    "data_source_name": "Genomics_England_PanelApp",
+    "data_format": "JSON",
+    "output_format": "BED",
+    "URL":"https://panelapp.genomicsengland.co.uk/api/v1/panels/543"
+  }
+]

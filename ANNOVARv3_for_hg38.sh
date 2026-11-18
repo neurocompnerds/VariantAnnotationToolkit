@@ -1,22 +1,23 @@
 #!/bin/bash
-# ANNOVARv3.sh my.vcf
+# ANNOVARv3_for_hg38.sh my.vcf(.gz)
 
 # Variables that usually don't need changing once set for your system
-AnnovarPATH=/opt/annovar # Where the Annovar program is
 SCRIPTPATH="$(dirname "$(readlink -f "$0")")" # Where the python & perl scripts for Annovar or other general scripts are
 BUILD=Hs38DH # Genome build used by ANNOVAR either hg18 or $BUILD. This will also be incorporated into file names
+source $SCRIPTPATH/config/environment.cfg
+source $SCRIPTPATH/config/environment.local.cfg 2>/dev/null # Load local settings if they exist
 AV_INPUT=$1.avinput
 AV_DB=/opt/annovar/humandb/hg38/
 
 usage()
 {
 echo "# $0 A script to annotate variants using ANNOVAR
-# Usage $0 VCF.filename.vcf | -h
+# Usage $0 VCF.filename.vcf.gz [-b build -g| -h
 #
 #	-h --help	Prints this message
 #
 # Example:
-# $0 GATK.filtered.snps.vcf
+# $0 GATK.filtered.snps.vcf.gz
 #
 # Paths currently set
 # AnnovarPATH=$AnnovarPATH
@@ -63,7 +64,7 @@ esac
 # Create clean up script
 cp $SCRIPTPATH/BWA-Picard-GATK-CleanUp.sh $1.CleanUp.sh # Items are added to this script that can then be run later to delete all redundant files
 
-#Annovar - Conversion to Annovar file format. Will skip if file exists so if you think the file is dodgy need to delete it
+#Annovar - Conversion to Annovar file format. Will skip if file exists so if you think the file is dodgy you need to delete it
 if [ ! -f $AV_INPUT ]; then
 	perl $AnnovarPATH/convert2annovar.pl --format vcf4 --allsample --withfreq --includeinfo $1 > $AV_INPUT
 fi
@@ -73,10 +74,11 @@ fi
 perl $AnnovarPATH/table_annovar.pl -thread 8 $AV_INPUT $AV_DB/ \
 --buildver $BUILD \
 --remove \
---protocol gene,phastConsElements100way,genomicSuperDups,esp6500siv2_all,1000g2015aug_all,gnomad30_genome,avsnp151,clinvar_latest,dbnsfp41a,\
-dbnsfp47a_interpro,dbscsnv11,regsnpintron,spliceai_filtered,gene4denovo201907,\
+--protocol ensGene,\
+phastConsElements100way,genomicSuperDups,\
+esp6500siv2_all,1000g2015aug_all,gnomad30_genome,avsnp151,clinvar_latest,dbnsfp54a,dbscsnv11,regsnpintron,spliceai_filtered,gene4denovo201907,\
 dgvMerged,evoCpg,cpgIslandExt,evofold,gwasCatalog,switchDbTss,targetScanS,vistaEnhancers,wgRna \
---operation g,r,r,f,f,f,f,f,f,f,f,f,f,f,r,r,r,r,r,r,r,r,r \
+--operation g,r,r,f,f,f,f,f,f,f,f,f,f,r,r,r,r,r,r,r,r,r \
 --otherinfo \
 --nastring . \
 --csvout \
@@ -88,34 +90,10 @@ perl $AnnovarPATH/annotate_variation.pl --filter --buildver $BUILD --thread 8 --
 perl $AnnovarPATH/annotate_variation.pl --filter --buildver $BUILD --thread 8 --dbtype gnomad312_genome $AV_INPUT $AV_DB/ >> $1.pipeline.log 2>&1
 
 # Generate special regionanno files
-perl $AnnovarPATH/annotate_variation.pl -regionanno -buildver $BUILD -dbtype bed -bedfile Epilepsy_hg38_genes_Mar22.bed $AV_INPUT $AV_DB >> $1.pipeline.log 2>&1
-awk '{gsub("bed","EpilepsyGene",$1)}1' $AV_INPUT.$BUILD\_bed > $AV_INPUT.$BUILD.bed_new   # replace bed with Epilepsy_gene
-awk -v OFS="\t" '$1=$1' $AV_INPUT.$BUILD.bed_new > $AV_INPUT.$BUILD\_EpilepsyGene  #Replace whitespaces with tabs in linux
-rm $AV_INPUT.$BUILD.bed_new $AV_INPUT.$BUILD\_bed
-perl $AnnovarPATH/annotate_variation.pl -regionanno -buildver $BUILD -dbtype bed -bedfile ID_hg38_genes_sept24.bed $AV_INPUT $AV_DB >> $1.pipeline.log 2>&1
-awk '{gsub("bed","IDGene",$1)}1' $AV_INPUT.$BUILD\_bed > $AV_INPUT.$BUILD.bed_new   # replace bed with ID_gene
-awk -v OFS="\t" '$1=$1' $AV_INPUT.$BUILD.bed_new > $AV_INPUT.$BUILD\_IDGene  # Replace whitespaces with tabs in linux
-rm $AV_INPUT.$BUILD.bed_new $AV_INPUT.$BUILD\_bed
-perl $AnnovarPATH/annotate_variation.pl -regionanno -buildver $BUILD -dbtype bed -bedfile hg38_CPgenesMay2020.bed $AV_INPUT $AV_DB >> $1.pipeline.log 2>&1
-awk '{gsub("bed","CPgene",$1)}1' $AV_INPUT.$BUILD\_bed > $AV_INPUT.$BUILD.bed_new   # replace bed with CPgene
-awk -v OFS="\t" '$1=$1' $AV_INPUT.$BUILD.bed_new > $AV_INPUT.$BUILD\_CPgene  #Replace whitespaces with tabs in linux
-rm $AV_INPUT.$BUILD.bed_new $AV_INPUT.$BUILD\_bed
-perl $AnnovarPATH/annotate_variation.pl -regionanno -buildver $BUILD -dbtype bed -bedfile CMHg38_04062020AG_50bp.bed $AV_INPUT $AV_DB >> $1.pipeline.log 2>&1
-awk '{gsub("bed","MCDGene",$1)}1' $AV_INPUT.$BUILD\_bed > $AV_INPUT.$BUILD.bed_new   # replace bed with MCDgene
-awk -v OFS="\t" '$1=$1' $AV_INPUT.$BUILD.bed_new > $AV_INPUT.$BUILD\_MCDGene  # Replace whitespaces with tabs in linux
-rm $AV_INPUT.$BUILD.bed_new $AV_INPUT.$BUILD\_bed
-perl $AnnovarPATH/annotate_variation.pl -regionanno -buildver $BUILD -dbtype bed -bedfile Kat_hg38_steroids_bed.bed $AV_INPUT $AV_DB >> $1.pipeline.log 2>&1
-awk '{gsub("bed","steroidGenes",$1)}1' $AV_INPUT.$BUILD\_bed > $AV_INPUT.$BUILD.bed_new   # replace bed with steroidGenes
-awk -v OFS="\t" '$1=$1' $AV_INPUT.$BUILD.bed_new > $AV_INPUT.$BUILD\_steroidGenes  # Replace whitespaces with tabs in linux
-rm $AV_INPUT.$BUILD.bed_new $AV_INPUT.$BUILD\_bed
-perl $AnnovarPATH/annotate_variation.pl -regionanno -buildver $BUILD -dbtype bed -bedfile burden_panel_strict_kj.bed $AV_INPUT $AV_DB >> $1.pipeline.log 2>&1
-awk '{gsub("bed","burdenAsdpanel",$1)}1' $AV_INPUT.$BUILD\_bed > $AV_INPUT.$BUILD.bed_new   # replace bed with burdenAsdpanel
-awk -v OFS="\t" '$1=$1' $AV_INPUT.$BUILD.bed_new > $AV_INPUT.$BUILD\_burdenAsdpanel  # Replace whitespaces with tabs in linux
-rm $AV_INPUT.$BUILD.bed_new $AV_INPUT.$BUILD\_bed
-perl $AnnovarPATH/annotate_variation.pl -regionanno -buildver $BUILD -dbtype bed -bedfile mega_panel_asd_id_panelapp_kj.bed $AV_INPUT $AV_DB >> $1.pipeline.log 2>&1
-awk '{gsub("bed","megaAsdpanel",$1)}1' $AV_INPUT.$BUILD\_bed > $AV_INPUT.$BUILD.bed_new   # replace bed with megaAsdpanel
-awk -v OFS="\t" '$1=$1' $AV_INPUT.$BUILD.bed_new > $AV_INPUT.$BUILD\_megaAsdpanel  # Replace whitespaces with tabs in linux
-rm $AV_INPUT.$BUILD.bed_new $AV_INPUT.$BUILD\_bed
+for Panel in Epilepsy ID CP ASD; do
+  perl $AnnovarPATH/annotate_variation.pl -regionanno -buildver $BUILD -dbtype bed  --colsWanted 4 -bedfile ${BUILD}_${Panel}_latest.bed $AV_INPUT $AV_DB >> $1.pipeline.log 2>&1
+  mv "${AV_INPUT}.${BUILD}_bed" "${AV_INPUT}.${BUILD}_${Panel}"
+done
 
 perl $AnnovarPATH/annotate_variation.pl -regionanno -buildver $BUILD -dbtype DDG2P --colsWanted 5,6,7,8,9 $AV_INPUT $AV_DB >> $1.pipeline.log 2>&1
 perl $AnnovarPATH/annotate_variation.pl -regionanno -buildver $BUILD -dbtype LoFToolScores --colsWanted 4 $AV_INPUT $AV_DB >> $1.pipeline.log 2>&1
@@ -136,4 +114,3 @@ $SCRIPTPATH/AnnovarGenomeSummaryCombo.v2_for_hg38.sh -c $AV_INPUT.combo.csv -g $
 # Add files to clean up script
 echo "rm $AV_INPUT" >> $1.CleanUp.sh
 echo "rm $AV_INPUT.$BUILD\_*" >> $1.CleanUp.sh
-

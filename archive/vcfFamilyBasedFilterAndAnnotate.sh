@@ -123,7 +123,7 @@ cp $famDir/$Sample/$Sample.$Family.common.vcf.GenomeAnnotationsCombined.txt $Fam
 		mv tmp.$Sample.txt $Family.GenomeAnnotationsCombined.$Sample.txt
 		head -n1 $Family.GenomeAnnotationsCombined.$Sample.txt > $Family.BestGeneCandidates.$Sample.txt # Save the header row
 		awk -F"\t" '$13 < 0.005 && $14 < 0.001 && $15 < 0.005 && $16 < 0.005 && $18 < 0.01 {print}' $Family.GenomeAnnotationsCombined.$Sample.txt |\
-		grep -Fwvf ~/Documents/Scripts/gitHub/VariantAnnotationToolkit/Func.Gene.Remove.txt - >> $Family.BestGeneCandidates.$Sample.txt # Variant frequency filters, exonic, splicing and PASS
+		grep -Fwvf ~/Documents/Scripts/gitHub/VariantAnnotationToolkit/config/Func.Gene.Remove.txt - >> $Family.BestGeneCandidates.$Sample.txt # Variant frequency filters, exonic, splicing and PASS
 	done
 done
 

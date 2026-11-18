@@ -150,7 +150,7 @@ for name in $probandID $sibID ; do
         ##variant filtering
         head -n1 $name.uniqueKeys.GenomeAnnotationsCombined.$model.txt > $name.uniqueKeys.BestGeneCandidates.$model.txt #header
         awk -F"\t" '$13 < 0.005 && $14 < 0.001 && $15 < 0.005 && $16 < 0.005 && $18 < 0.01 && $20 < 0.001 && $21 < 0.001 && $22 < 0.001 && $(NF-6)=="PASS" {print}' $name.uniqueKeys.GenomeAnnotationsCombined.$model.txt |\
-        grep -Fwvf ~/Documents/Scripts/local/Func.Gene.Remove.txt - >> $name.uniqueKeys.BestGeneCandidates.$model.txt # Variant frequency filters, exonic, splicing and PASS
+        grep -Fwvf ~/Documents/Scripts/local/config/Func.Gene.Remove.txt - >> $name.uniqueKeys.BestGeneCandidates.$model.txt # Variant frequency filters, exonic, splicing and PASS
 		) &
 	done
 done
@@ -169,7 +169,7 @@ for model in dn ch ibd Xl  ; do
     ##variant filtering
     head -n1 $familyID.sharedKeys.GenomeAnnotationsCombined.$model.txt > $familyID.BestGeneCandidates.$model.txt #header
     awk -F"\t" '$13 < 0.005 && $14 < 0.001 && $15 < 0.005 && $16 < 0.005 && $18 < 0.01 && $20 < 0.001 && $21 < 0.001 && $22 < 0.001 && $(NF-7)=="PASS" {print}' $familyID.sharedKeys.GenomeAnnotationsCombined.$model.txt |\
-    grep -Fwvf ~/Documents/Scripts/local/Func.Gene.Remove.txt - >> $familyID.BestGeneCandidates.$model.txt # Variant frequency filters, exonic, splicing and PASS
+    grep -Fwvf ~/Documents/Scripts/local/config/Func.Gene.Remove.txt - >> $familyID.BestGeneCandidates.$model.txt # Variant frequency filters, exonic, splicing and PASS
     ) &
 done
 wait
