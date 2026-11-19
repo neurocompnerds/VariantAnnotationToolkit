@@ -1,8 +1,11 @@
 #!/usr/bin/python3
 
 # Script to filter affected family members for matched genotypes in a multisample ANNOVAR file
+import csv
+import getopt
+import sys
+
 import pandas as pd
-import sys, getopt, csv
 
 def usage():
     print(
@@ -30,6 +33,7 @@ def usage():
 # Set initial values
 inputFile = ''
 sampleFile = ''
+geneAnnotationSources = ['refGene', 'ensGene', 'knownGene', 'gene']
 geneTerms = ['exonic', 'splicing', 'UTR5', 'ncRNA_exonic', 'ncRNA_splicing']
 notGeneTerms = ['downstream', 'intergenic', 'intronic', 'ncRNA_exonic', 'ncRNA_intronic', 'ncRNA_splicing', 'ncRNA_UTR3', 'ncRNA_UTR5', 'upstream', 'UTR3', 'UTR5']
 filterTerms = ['.', 'PASS']
@@ -37,12 +41,12 @@ ncSpliceTerms = ['splicing', 'intronic']
 filter005 = ['esp6500siv2_all', '1000g2015aug_all']
 filter0001 = ['exac03', 'gnomad211_exome', 'gnomad312_genome', 'AF']
 pathogenicFilter = ['Pathogenic', 'Likely_pathogenic']
-nullAlelles = ['0/0', '0\|0', '\./\.']
+nullAlelles = ['0/0', r'0\|0', r'\./\.']
 # Read command line arguments
 try:
     opts, args = getopt.getopt(sys.argv[1:],'hi:s:',['help'])
 except getopt.GetoptError:
-    usage
+    usage()
     sys.exit(2)
 for opt, arg in opts:
     if opt in ("-h", "--help"):
@@ -69,16 +73,30 @@ with open(inputFile) as f:
 ANNOVARtable=pd.read_csv(inputFile, sep='\t', index_col = num_cols) 
 coreTable=ANNOVARtable.loc[:,:'FORMAT']
 
+# find out which annotation source was used.
+if 'Func.refGene' in ANNOVARtable.columns:
+    geneAnnotationSource = 'refGene'
+elif 'Func.ensGene' in ANNOVARtable.columns:
+    geneAnnotationSource = 'ensGene'
+elif 'Func.knownGene' in ANNOVARtable.columns:
+    geneAnnotationSource = 'knownGene'
+elif 'Func.gene' in ANNOVARtable.columns:
+    geneAnnotationSource = 'gene'
+else:
+    print('ERROR: No valid gene annotation source found.')
+    sys.exit(1)
+
 if sampleFile =='':
     print('INFO: Using all samples available in the file\n')
     samples = ANNOVARtable.columns[ANNOVARtable.columns.get_loc("FORMAT")+1:]
 elif sampleFile !='':
-    samples = [line.rstrip() for line in open(sampleFile)]
+    with open(sampleFile) as f:
+        samples = [line.rstrip() for line in f]
 
 dfCore=coreTable
 for s in samples: # Maybe this loop could be an apply function?
     currentSampleList=ANNOVARtable[[s]]
-    homList=currentSampleList[currentSampleList[s].str.match(pat = '(1/1)|(1\|1)')]
+    homList=currentSampleList[currentSampleList[s].str.match(pat = r'(1/1)|(1\|1)')]
     dfCore = pd.concat([dfCore,homList], axis=1, join='inner') # Add , sort='False' once Ubuntu is upgraded
 
 dfCore.to_csv("ibdAndXl."+inputFile, sep='\t')
@@ -89,18 +107,18 @@ dfCore=dfCore[(dfCore[filter005].apply(pd.to_numeric, errors='coerce').fillna(0)
 dfCore=dfCore[(dfCore[filter0001].apply(pd.to_numeric, errors='coerce').fillna(0).lt(0.0001)).all(axis=1)]
 
 #BestGeneCandidates
-bgc=dfCore[dfCore['Func.refGene'].isin(geneTerms)]
+bgc=dfCore[dfCore[f"Func.{geneAnnotationSource}"].isin(geneTerms)]
 bgc.to_csv("ibdAndXl.BestGeneCandidates."+inputFile, sep='\t')
 
 # Cadidates to test with spliceAI
-spliceCandidates=dfCore[dfCore['Func.refGene'].isin(ncSpliceTerms)]
+spliceCandidates=dfCore[dfCore[f"Func.{geneAnnotationSource}"].isin(ncSpliceTerms)]
 spliceCandidates.to_csv("ibdAndXl.SpliceCandidates."+inputFile, sep='\t')
 
 # Reset and repeat for het calls
 dfCore=coreTable 
 for s in samples:  
     currentSampleList=ANNOVARtable[[s]]
-    homList=currentSampleList[currentSampleList[s].str.match(pat = '(0/1)|(0\|1)|(1\|0)')]
+    homList=currentSampleList[currentSampleList[s].str.match(pat = r'(0/1)|(0\|1)|(1\|0)')]
     dfCore = pd.concat([dfCore,homList], axis=1, join='inner') # Add , sort='False' once Ubuntu is upgraded
 
 dfCore.to_csv("het."+inputFile, sep='\t')
@@ -109,11 +127,11 @@ dfCore=dfCore[(dfCore[filter005].apply(pd.to_numeric, errors='coerce').fillna(0)
 dfCore=dfCore[(dfCore[filter0001].apply(pd.to_numeric, errors='coerce').fillna(0).lt(0.0001)).all(axis=1)]
 
 #BestGeneCandidates
-bgc=dfCore[dfCore['Func.refGene'].isin(geneTerms)]
+bgc=dfCore[dfCore[f"Func.{geneAnnotationSource}"].isin(geneTerms)]
 bgc.to_csv("het.BestGeneCandidates."+inputFile, sep='\t')
 
 # Find cadidates to test with spliceAI
-spliceCandidates=dfCore[dfCore['Func.refGene'].isin(ncSpliceTerms)]
+spliceCandidates=dfCore[dfCore[f"Func.{geneAnnotationSource}"].isin(ncSpliceTerms)]
 spliceCandidates.to_csv("het.SpliceCandidates."+inputFile, sep='\t')
 
 # Find any ClinVar variants

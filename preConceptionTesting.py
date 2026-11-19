@@ -1,8 +1,11 @@
 #!/usr/bin/python3
 
 # Script to filter parents for recessive and X-linked genotypes from in a multisample ANNOVAR file
+import csv
+import getopt
+import sys
+
 import pandas as pd
-import sys, getopt, csv
 
 def usage():
     print(
@@ -29,6 +32,7 @@ def usage():
 # Set initial values
 inputFile = ''
 sampleFile = ''
+geneAnnotationSources = ['refGene', 'ensGene', 'knownGene', 'gene']
 geneTerms = ['exonic', 'splicing', 'UTR5', 'ncRNA_exonic', 'ncRNA_splicing']
 notGeneTerms = ['downstream', 'intergenic', 'intronic', 'ncRNA_exonic', 'ncRNA_intronic', 'ncRNA_splicing', 'ncRNA_UTR3', 'ncRNA_UTR5', 'upstream', 'UTR3', 'UTR5']
 filterTerms = ['.', 'PASS']
@@ -36,12 +40,12 @@ ncSpliceTerms = ['splicing', 'intronic']
 filter005 = ['esp6500siv2_all', '1000g2015aug_all']
 filter0001 = ['exac03', 'gnomad211_exome', 'gnomad312_genome', 'AF']
 pathogenicFilter = ['Pathogenic', 'Likely_pathogenic']
-nullAlelles = ['0/0', '0\|0', '\./\.']
+nullAlelles = ['0/0', r'0\|0', r'\./\.']
 # Read command line arguments
 try:
     opts, args = getopt.getopt(sys.argv[1:],'hi:m:f:',['help'])
 except getopt.GetoptError:
-    usage
+    usage()
     sys.exit(2)
 for opt, arg in opts:
     if opt in ("-h", "--help"):
@@ -65,7 +69,7 @@ def bestGeneCandidatesFilter(df):
     df=df[df['FILTER'].isin(filterTerms)]
     df=df[(df[filter005].apply(pd.to_numeric, errors='coerce').fillna(0).lt(0.005)).all(axis=1)]
     df=df[(df[filter0001].apply(pd.to_numeric, errors='coerce').fillna(0).lt(0.0001)).all(axis=1)]
-    df=df[~df['Func.gene'].isin(notGeneTerms)]
+    df=df[~df[f"Func.{geneAnnotationSource}"].isin(notGeneTerms)]
     return df
 
 # Count the number of columns in the ANNOVAR table
@@ -76,9 +80,23 @@ with open(inputFile) as f:
 
 # Open ANNOVAR table with pandas setting the chr-start-ref-obs column as the index
 ANNOVARtable=pd.read_csv(inputFile, sep='\t', index_col = num_cols)
+
+# Find out which annotation source was used
+if 'Func.refGene' in ANNOVARtable.columns:
+    geneAnnotationSource = 'refGene'
+elif 'Func.ensGene' in ANNOVARtable.columns:
+    geneAnnotationSource = 'ensGene'
+elif 'Func.knownGene' in ANNOVARtable.columns:
+    geneAnnotationSource = 'knownGene'
+elif 'Func.gene' in ANNOVARtable.columns:
+    geneAnnotationSource = 'gene'
+else:
+    print('ERROR: No valid gene annotation source found.')
+    sys.exit(1)
+
 samples = [mumID, dadID]
 
-hetList=ANNOVARtable[ANNOVARtable[samples[0]].str.match(pat = '(0/1)|(0\|1)|(1\|0)') & ANNOVARtable[samples[1]].str.match(pat = '(0/1)|(0\|1)|(1\|0)')]
+hetList=ANNOVARtable[ANNOVARtable[samples[0]].str.match(pat = r'(0/1)|(0\|1)|(1\|0)') & ANNOVARtable[samples[1]].str.match(pat = r'(0/1)|(0\|1)|(1\|0)')]
 hetList.to_csv("allSharedHetCalls."+inputFile, sep='\t')
 
 #Generic filters for most likely pathogenic
@@ -86,24 +104,24 @@ hetList=bestGeneCandidatesFilter(df=hetList)
 hetList.to_csv("allSharedHetCalls.BestGeneCandidates."+inputFile, sep='\t')
 
 # Compound het calls
-mNotfHets=ANNOVARtable[ANNOVARtable[samples[0]].str.match(pat = '(0/1)|(0\|1)|(1\|0)') & ANNOVARtable[samples[1]].str.contains('|'.join(nullAlelles))]
-mGenes=pd.unique(mNotfHets['Gene.refGene'])
-fNotmHets=ANNOVARtable[ANNOVARtable[samples[0]].str.contains('|'.join(nullAlelles)) & ANNOVARtable[samples[1]].str.match(pat = '(0/1)|(0\|1)|(1\|0)')]
-fGenes=pd.unique(fNotmHets['Gene.refGene'])
+mNotfHets=ANNOVARtable[ANNOVARtable[samples[0]].str.match(pat = r'(0/1)|(0\|1)|(1\|0)') & ANNOVARtable[samples[1]].str.contains('|'.join(nullAlelles))]
+mGenes=pd.unique(mNotfHets[f"Gene.{geneAnnotationSource}"])
+fNotmHets=ANNOVARtable[ANNOVARtable[samples[0]].str.contains('|'.join(nullAlelles)) & ANNOVARtable[samples[1]].str.match(pat = r'(0/1)|(0\|1)|(1\|0)')]
+fGenes=pd.unique(fNotmHets[f"Gene.{geneAnnotationSource}"])
 seriesCHgenes=pd.Series(mGenes.tolist() + fGenes.tolist())
 chGenes=seriesCHgenes[seriesCHgenes.duplicated()]
 compHets=pd.concat([mNotfHets, fNotmHets], axis=0, join='outer')
-compHets=compHets[compHets['Gene.refGene'].isin(chGenes)] # All possible compHets
+compHets=compHets[compHets[f"Gene.{geneAnnotationSource}"].isin(chGenes)] # All possible compHets
 # Independently apply filters to mum and dad lists then filter the CH list
 filtmNotfHets=bestGeneCandidatesFilter(df=mNotfHets)
 filtfNotmHets=bestGeneCandidatesFilter(df=fNotmHets)
-mGenes=pd.unique(filtmNotfHets['Gene.refGene'])
-fGenes=pd.unique(filtfNotmHets['Gene.refGene'])
+mGenes=pd.unique(filtmNotfHets[f"Gene.{geneAnnotationSource}"])
+fGenes=pd.unique(filtfNotmHets[f"Gene.{geneAnnotationSource}"])
 seriesCHgenes=pd.Series(mGenes.tolist() + fGenes.tolist())
 chGenes=seriesCHgenes[seriesCHgenes.duplicated()]
-compHets=compHets[compHets['Gene.refGene'].isin(chGenes)]
+compHets=compHets[compHets[f"Gene.{geneAnnotationSource}"].isin(chGenes)]
 compHets=bestGeneCandidatesFilter(df=compHets)
-compHets=compHets[compHets['Gene.refGene'].duplicated(keep=False)]  # Re-run the gene filter after the other filters
+compHets=compHets[compHets[f"Gene.{geneAnnotationSource}"].duplicated(keep=False)]  # Re-run the gene filter after the other filters
 compHets.to_csv("allcompHetCalls.BestGeneCandidates."+inputFile, sep='\t')
 
 # X-linked
