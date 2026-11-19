@@ -12,22 +12,21 @@ Edits:
 '''
 
 import csv
-import glob
 import os
 import re
 import sys
 
-REGEX_VARIANT = "\S+\s+\S+\s+\S+\s+\S+\s+\S+"
+REGEX_VARIANT = r"\S+\s+\S+\s+\S+\s+\S+\s+\S+"
 
 def readVariants(fileName, extension):
-    pattern = "^%s\t([^\t]+)\t(%s)" % (extension, REGEX_VARIANT)
+    pattern = f"^{extension}\t([^\t]+)\t({REGEX_VARIANT})"
 
     variants = {}
     with open(fileName) as f:
         for line in f:
             match = re.search(pattern, line)
             if match is None:
-                raise ValueError("'%s' has no match for '%s'" % (line, pattern))
+                raise ValueError(f"'{line}' has no match for '{pattern}'")
 
             variants[match.group(2)] = match.group(1)
 
@@ -38,7 +37,7 @@ def loadColumnsForVariants(annovarOutputFiles):
     data = {}
     for fileName in annovarOutputFiles:
         extension = os.path.splitext(fileName)[1][1:]
-        if extension.endswith("log") or extension.endswith("_filtered"):
+        if extension.endswith(("log", "_filtered")):
             continue
 
         try:
@@ -50,15 +49,15 @@ def loadColumnsForVariants(annovarOutputFiles):
                 annovarDB = '_'.join(components[1:-1])
             data[annovarDB] = readVariants(fileName, annovarDB)
         except Exception as e:
-            sys.stderr.write("Problem parsing file: '%s'\n" % fileName)
+            sys.stderr.write(f"Problem parsing file: '{fileName}'\n")
             raise e
     return data
 
 def parseAnnovarInputLine(line):
-    pattern = "^(%s)\s+(.*)" % REGEX_VARIANT
+    pattern = rf"^({REGEX_VARIANT})\s+(.*)"
     match = re.search(pattern, line)
     if not match:
-        raise ValueError("line '%s' did not match '%s'" % (line, pattern))
+        raise ValueError(f"line '{line}' did not match '{pattern}'")
 
     variant = match.group(1)
     other = match.group(2)
@@ -90,7 +89,7 @@ def combineAnnovarOutputs(annovarInput, annovarOutputFiles):
 
 if __name__ == '__main__':
     if len(sys.argv) < 3:
-        sys.stderr.write("Usage %s avinput <list of files to combine>\n" % (os.path.basename(sys.argv[0])))
+        sys.stderr.write(f"Usage {os.path.basename(sys.argv[0])} avinput <list of files to combine>\n")
         sys.exit(1)
     
     combineAnnovarOutputs(sys.argv[1], sys.argv[2:])

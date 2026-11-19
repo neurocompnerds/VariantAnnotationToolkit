@@ -92,7 +92,8 @@ perl $AnnovarPATH/annotate_variation.pl --filter --buildver $BUILD --thread 8 --
 # Generate special regionanno files
 for Panel in Epilepsy ID CP ASD; do
   perl $AnnovarPATH/annotate_variation.pl -regionanno -buildver $BUILD -dbtype bed  --colsWanted 4 -bedfile ${BUILD}_${Panel}_latest.bed $AV_INPUT $AV_DB >> $1.pipeline.log 2>&1
-  mv "${AV_INPUT}.${BUILD}_bed" "${AV_INPUT}.${BUILD}_${Panel}"
+  sed 's,^bed,'${Panel}',g' "${AV_INPUT}.${BUILD}_bed" > "${AV_INPUT}.${BUILD}_${Panel}"
+  rm "${AV_INPUT}.${BUILD}_bed" 
 done
 
 perl $AnnovarPATH/annotate_variation.pl -regionanno -buildver $BUILD -dbtype DDG2P --colsWanted 5,6,7,8,9 $AV_INPUT $AV_DB >> $1.pipeline.log 2>&1

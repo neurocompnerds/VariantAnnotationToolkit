@@ -99,14 +99,14 @@ NColsGenomeFile=$(awk -F "\t" 'FNR == 2 {print NF}' $GenomeFile.txt)
 
 # Combine columns (specific to how ANNOVAR is run so may or may not work perfectly)
 cut -f 1-5 $ComboFile.txt > $OUTPREFIX.tmp.1.txt # chr,start,end,ref,obs
-cut -f 6-14 $GenomeFile.txt > $OUTPREFIX.tmp.2a.txt # Func.refGene,Gene.refGene,GeneDetail,ExonicFunc,AAChange,Conserved,SegDup,ESP6500siv2_ALL,1000g2015aug_ALL
-cut -f 16-18 $ComboFile.txt > $OUTPREFIX.tmp.2b.txt # exac03,gnomad_exome,gnomad312_genome
+cut -f 6-14 $GenomeFile.txt > $OUTPREFIX.tmp.2a.txt # Func.refGene,Gene.refGene,GeneDetail,ExonicFunc,AAChange,phastCons,SegDup,ESP6500siv2_ALL,1000g2015aug_ALL
+cut -f 15-17 $ComboFile.txt > $OUTPREFIX.tmp.2b.txt # exac03,gnomad_exome,gnomad312_genome
 cut -f 28-33 $GenomeFile.txt > $OUTPREFIX.tmp.3a.txt # snp151, clinvar (5cols)
-cut -f 6,7,8,10,12,15,19,23 $ComboFile.txt > $OUTPREFIX.tmp.3b.txt # CPGene,DDG2P,EpilepsyGene,IDGene,MCDGene,burden_asd_panel,mega_asd_panel,steroid_genes
-cut -f 9,11,13,14,20,21,22 $ComboFile.txt > $OUTPREFIX.tmp.3c.txt # GDIScores,LoFToolScores,RVISExACscores,Zscores,pLI,oe_scores (x2)
-cut -f 34-106 $GenomeFile.txt > $OUTPREFIX.tmp.4.txt # All the other annotations finishing with wgRna
+cut -f 6,7,8,9,11 $ComboFile.txt > $OUTPREFIX.tmp.3b.txt # ASD,CP,DDG2P,Epilepsy,ID
+cut -f 10,12,13,14,18,19,20 $ComboFile.txt > $OUTPREFIX.tmp.3c.txt # GDIScores,LoFToolScores,RVISExACscores,Zscores,oe_scores (x2),pLI
+cut -f 34-182 $GenomeFile.txt > $OUTPREFIX.tmp.4.txt # All the other annotations finishing with wgRna
 cut -f 15-27 $GenomeFile.txt > $OUTPREFIX.tmp.4b.txt # gnomad30_genome
-cut -f 107-$NColsGenomeFile $GenomeFile.txt > $OUTPREFIX.tmp.5.txt # VCF info
+cut -f 183-$NColsGenomeFile $GenomeFile.txt > $OUTPREFIX.tmp.5.txt # VCF info
 
 # Replace Otherinfo labels with VCF fields"
 if [ "${OUTPREFIX:(-2)}" = "gz" ]; then
@@ -131,7 +131,8 @@ fi
 
 # Create a key for variant lookup chr-start-ref-obs
 cut -f 1,2,4,5 $OUTPREFIX.tmp.1.txt | sed 's,\t,-,g' > $OUTPREFIX.tmp.key.txt  
-paste $OUTPREFIX.tmp.1.txt $OUTPREFIX.tmp.2a.txt $OUTPREFIX.tmp.2b.txt $OUTPREFIX.tmp.3a.txt $OUTPREFIX.tmp.3b.txt $OUTPREFIX.tmp.3c.txt $OUTPREFIX.tmp.4.txt $OUTPREFIX.tmp.4b.txt $OUTPREFIX.tmp.5.txt $OUTPREFIX.tmp.key.txt > $OUTPREFIX.GenomeAnnotationsCombined.txt
+paste $OUTPREFIX.tmp.1.txt $OUTPREFIX.tmp.2a.txt $OUTPREFIX.tmp.2b.txt $OUTPREFIX.tmp.3a.txt $OUTPREFIX.tmp.3b.txt $OUTPREFIX.tmp.3c.txt $OUTPREFIX.tmp.4.txt $OUTPREFIX.tmp.4b.txt $OUTPREFIX.tmp.5.txt $OUTPREFIX.tmp.key.txt > $OUTPREFIX.GenomeAnnotationsCombined.tmp.txt
+sed 's,Name=,,g ; s,Score=,,g' $OUTPREFIX.GenomeAnnotationsCombined.tmp.txt > $OUTPREFIX.GenomeAnnotationsCombined.txt
 
 # Clean up temp files
-rm $OUTPREFIX.tmp.1.txt $OUTPREFIX.tmp.2a.txt $OUTPREFIX.tmp.2b.txt $OUTPREFIX.tmp.3a.txt $OUTPREFIX.tmp.3b.txt $OUTPREFIX.tmp.3c.txt $OUTPREFIX.tmp.4.txt $OUTPREFIX.tmp.4b.txt $OUTPREFIX.tmp.5.txt $ComboFile.txt $GenomeFile.txt
+rm $OUTPREFIX.tmp.1.txt $OUTPREFIX.tmp.2a.txt $OUTPREFIX.tmp.2b.txt $OUTPREFIX.tmp.3a.txt $OUTPREFIX.tmp.3b.txt $OUTPREFIX.tmp.3c.txt $OUTPREFIX.tmp.4.txt $OUTPREFIX.tmp.4b.txt $OUTPREFIX.tmp.5.txt $ComboFile.txt $GenomeFile.txt $OUTPREFIX.GenomeAnnotationsCombined.tmp.txt
